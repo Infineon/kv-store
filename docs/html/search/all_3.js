@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['mtb_5fkvstore_5falignment_5ferror',['MTB_KVSTORE_ALIGNMENT_ERROR',['../group__group__kvstore.html#ga4513227045ee358f8f2622c8cf0a3485',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbad_5fparam_5ferror',['MTB_KVSTORE_BAD_PARAM_ERROR',['../group__group__kvstore.html#gaf080d74c7e7cd0b04649ce6617831e74',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5ferase',['mtb_kvstore_bd_erase',['../group__group__kvstore.html#gaa521c2914fc790e5d136181048f50f6a',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5ferase_5fsize',['mtb_kvstore_bd_erase_size',['../group__group__kvstore.html#ga83088ee1a6a3e2f21a5b5a49872376a3',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5fprogram',['mtb_kvstore_bd_program',['../group__group__kvstore.html#gafa765da223259f38def31dabd5f7caad',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5fprogram_5fsize',['mtb_kvstore_bd_program_size',['../group__group__kvstore.html#ga4499b4b4ff015933edafcdbe31f28861',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5fread',['mtb_kvstore_bd_read',['../group__group__kvstore.html#ga4fe2403d757ee5012ede8e77b975731e',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5fread_5fsize',['mtb_kvstore_bd_read_size',['../group__group__kvstore.html#gace5f5a51091ae09da21963322accea8f',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fbd_5ft',['mtb_kvstore_bd_t',['../group__group__kvstore.html#structmtb__kvstore__bd__t',1,'']]],
+  ['mtb_5fkvstore_5fdeinit',['mtb_kvstore_deinit',['../group__group__kvstore.html#ga4388f0dd869ef9dbe2da0d2920cca290',1,'mtb_kvstore_deinit(mtb_kvstore_t *obj):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga4388f0dd869ef9dbe2da0d2920cca290',1,'mtb_kvstore_deinit(mtb_kvstore_t *obj):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5fdelete',['mtb_kvstore_delete',['../group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9',1,'mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9',1,'mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5ferased_5fdata_5ferror',['MTB_KVSTORE_ERASED_DATA_ERROR',['../group__group__kvstore.html#ga531cd29dc9167444df1474d15a9e263f',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5finit',['mtb_kvstore_init',['../group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780',1,'mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_kvstore_bd_t *block_device):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780',1,'mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_kvstore_bd_t *block_device):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5finvalid_5fdata_5ferror',['MTB_KVSTORE_INVALID_DATA_ERROR',['../group__group__kvstore.html#ga231945421777b158f99b21e5bc2ffde0',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fitem_5fnot_5ffound_5ferror',['MTB_KVSTORE_ITEM_NOT_FOUND_ERROR',['../group__group__kvstore.html#ga0b1535ec72da31cca2681a2990d69d60',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fmax_5fkey_5fsize',['MTB_KVSTORE_MAX_KEY_SIZE',['../group__group__kvstore.html#ga23dc5337825e5abb56afd1938b41e997',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fmem_5falloc_5ferror',['MTB_KVSTORE_MEM_ALLOC_ERROR',['../group__group__kvstore.html#gaa4476b5e7db68726ae74b0153690fbfc',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fread',['mtb_kvstore_read',['../group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14',1,'mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14',1,'mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5fremaining_5fsize',['mtb_kvstore_remaining_size',['../group__group__kvstore.html#ga51591921642d49be5e5c8a9814bebd39',1,'mtb_kvstore_remaining_size(mtb_kvstore_t *obj):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga51591921642d49be5e5c8a9814bebd39',1,'mtb_kvstore_remaining_size(mtb_kvstore_t *obj):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5freset',['mtb_kvstore_reset',['../group__group__kvstore.html#ga5dc849717a6e3c8b7803fe2224cc6df1',1,'mtb_kvstore_reset(mtb_kvstore_t *obj):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga5dc849717a6e3c8b7803fe2224cc6df1',1,'mtb_kvstore_reset(mtb_kvstore_t *obj):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5fsize',['mtb_kvstore_size',['../group__group__kvstore.html#ga543e217c6dad81778e1fc9926e28f23f',1,'mtb_kvstore_size(mtb_kvstore_t *obj):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga543e217c6dad81778e1fc9926e28f23f',1,'mtb_kvstore_size(mtb_kvstore_t *obj):&#160;mtb_kvstore.c']]],
+  ['mtb_5fkvstore_5fstorage_5ffull_5ferror',['MTB_KVSTORE_STORAGE_FULL_ERROR',['../group__group__kvstore.html#gaf746e26fd8da70e4169614b530371a65',1,'mtb_kvstore.h']]],
+  ['mtb_5fkvstore_5fwrite',['mtb_kvstore_write',['../group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835',1,'mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size):&#160;mtb_kvstore.c'],['../group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835',1,'mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size):&#160;mtb_kvstore.c']]]
+];
