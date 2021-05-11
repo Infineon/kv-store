@@ -118,7 +118,7 @@ static void _mtb_kvstore_unlock(mtb_kvstore_t* obj)
 }
 
 
-#else // if defined(CY_RTOS_AWARE)
+#else // if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
 //--------------------------------------------------------------------------------------------------
 // _mtb_kvstore_initlock
 //--------------------------------------------------------------------------------------------------
@@ -157,15 +157,19 @@ static void _mtb_kvstore_unlock(mtb_kvstore_t* obj)
 }
 
 
-#endif // if defined(CY_RTOS_AWARE)
+#endif // if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
 
 //--------------------------------------------------------------------------------------------------
 // _mtb_kvstore_is_valid_key
 //--------------------------------------------------------------------------------------------------
 static inline bool _mtb_kvstore_is_valid_key(const char* key)
 {
-    uint32_t key_size = strlen(key);
-    return (key != NULL) && (key_size > 0) && (key_size < MTB_KVSTORE_MAX_KEY_SIZE);
+    if (NULL != key)
+    {
+        uint32_t key_size = strlen(key);
+        return (key_size > 0) && (key_size < MTB_KVSTORE_MAX_KEY_SIZE);
+    }
+    return false;
 }
 
 
@@ -1548,7 +1552,7 @@ cy_rslt_t mtb_kvstore_delete(mtb_kvstore_t* obj, const char* key)
         return result;
     }
 
-    result = _mtb_kvstore_write_with_flags(obj, key, NULL, 0, _MTB_KVSTORE_DELETE_FLAG);
+    result = _mtb_kvstore_write_with_flags(obj, key, NULL, 0, true);
 
     _mtb_kvstore_unlock(obj);
 

@@ -45,12 +45,19 @@ extern "C" {
  * This section provides steps for getting started with this library by providing examples
  * using the [Serial Flash](https://github.com/cypresssemiconductorco/serial-flash) (v1.X) and
  * [HAL Flash driver](https://github.com/cypresssemiconductorco/mtb-hal-cat1)
- * (v1.X) libraries.
+ * (v1.X) libraries. Note that this section assumes that the required libraries are already
+ * included in the application. For more information on how to include libaries in the
+ * application please refer to the [ModusToolbox User Guide]
+ * (https://www.cypress.com/products/modustoolbox-software-environment)
  *
  * -# Include the kv-store library header in the application.
  *    \snippet kvstore_snip_serial.c snippet_mtb_kvstore_include
  *
- * -# Implement the block device interface.
+ * -# Implement the block device interface. The following snippets can be copied into
+ * the application. If neither the serial-flash nor HAL flash driver is being used to communicate
+ * with the
+ * storage device, the application must provide a custom implementation of the block device
+ * interface.
  *      - Example implementation using serial-flash library.
  *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_ser_flash_bd
  *      - Example implementation using hal flash driver.
@@ -232,7 +239,7 @@ typedef struct
 
     uint32_t                        consumed_size;
 
-    #if CY_RTOS_AWARE
+    #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
     cy_mutex_t                      mtb_kvstore_mutex;
     #endif
 } mtb_kvstore_t;

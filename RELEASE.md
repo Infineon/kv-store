@@ -5,6 +5,9 @@ The key value storage library provides an API enabling use of non-volatile stora
 APIs for storing key-value pairs of data in non-volatile storage.
 
 ### What Changed?
+#### v1.0.1
+* Fixed issue with RTOS_AWARE component not being handled in one case
+* Minor documentation updates
 #### v1.0.0
 * Initial release
 
@@ -22,6 +25,7 @@ Minimum required ModusToolbox Software Environment: v2.0
 
 ### More information
 Use the following links for more information, as needed:
+* [API Reference Guide](https://cypresssemiconductorco.github.io/kv-store/html/modules.html)
 * [Cypress Semiconductor, an Infineon Technologies Company](http://www.cypress.com)
 * [Cypress Semiconductor GitHub](https://github.com/cypresssemiconductorco)
 * [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
