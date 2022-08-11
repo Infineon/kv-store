@@ -40,6 +40,16 @@ kvstore library must be initialized after the RTOS kernel has started for the mu
 safely. The default timeout for the mutex is defined by `MTB_KVSTORE_MUTEX_TIMEOUT_MS` and can be
 overridden by specifying `DEFINES+=MTB_KVSTORE_MUTEX_TIMEOUT_MS=<value>` with the application Makefile.
 
+When determining a suitable timeout, consider that the execution time for KVStore modifying operations
+is impacted by several factors:
+* The size of the key and value being written
+* If garbage collection is required (see "Garbage collection" section for details) to complete a
+modification, this operation must erase half of the storage which was provided for kv-store to use.
+This is a potentially lengthy operation. The `mtb_kvstore_ensure_capacity` function can be used to
+trigger garbage collection, if necessary, in less timing sensitive contexts.
+* All operations are impacted by the write performance of the underlying storage device. For more
+details, see the datasheet of the selected MCU (for internal flash) or the external memory device.
+
 ## Design details
 ### Sequential log of records
 The key-value pairs are stored sequentially as records. Each operation appends a new record to the next
@@ -99,20 +109,22 @@ update, delete) and the active area contains obsolete records.
 * A corrupted record is encountered during initialization. This may happen if a power failure
 occurs while the a record is being appended during a modifying operation. The garbage collection
 operation will copy all non-obsolete records preceding the corrupted record.
+* The `mtb_kvstore_ensure_capacity` function is called and the active area does not contain the
+requested amount of space available for immediate usage.
 
 **NOTE:**
 Due to the garbage collection operation, write and delete operations may consume significantly more time than
 typical when the active area becomes full. Hence, they must not be called from timing critical code.
 
 ## Dependencies
-* [abstraction-rtos](https://github.com/cypresssemiconductorco/abstraction-rtos) library if the `CY_RTOS_AWARE`
+* [abstraction-rtos](https://github.com/infineon/abstraction-rtos) library if the `CY_RTOS_AWARE`
 macro is defined in the Makefile
 
 ## More information
-* [API Reference Guide](https://cypresssemiconductorco.github.io/kv-store/html/modules.html)
+* [API Reference Guide](https://infineon.github.io/kv-store/html/modules.html)
 * [Cypress Semiconductor, an Infineon Technologies Company](http://www.cypress.com)
-* [Cypress Semiconductor GitHub](https://github.com/cypresssemiconductorco)
-* [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
+* [Infineon GitHub](https://github.com/infineon)
+* [ModusToolbox™](https://www.cypress.com/products/modustoolbox-software-environment)
 
 ---
-© Cypress Semiconductor Corporation, 2021.
+© Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation, 2021.

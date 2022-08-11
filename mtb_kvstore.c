@@ -1,3 +1,29 @@
+/***********************************************************************************************//**
+ * \file mtb_kvstore.c
+ *
+ * \brief
+ * Utility library for storing key value pairs in memory.
+ *
+ ***************************************************************************************************
+ * \copyright
+ * Copyright 2018-2022 Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************************************/
+
 #include <string.h>
 #include <stdbool.h>
 
@@ -5,13 +31,13 @@
 #include "cy_utils.h"
 
 #define _MTB_KVSTORE_MIN_BUFF_SIZE          (128U)
-#define _MTB_KVSTORE_HEADER_MAGIC           (0xFACEFACE)
+#define _MTB_KVSTORE_HEADER_MAGIC           (0xFACEFACEU)
 #define _MTB_KVSTORE_FORMAT_VERSION         (0U)
 #define _MTB_KVSTORE_INITIAL_AREA_VERSION   (1U)
 #define _MTB_KVSTORE_DELETE_FLAG            (1U << 7)
 #define _MTB_KVSTORE_NO_FLAG                (0U)
 #define _MTB_KVSTORE_INIT_MAX_KEYS          (32U)
-#define _MTB_KVSTORE_AREA_SIZE(obj)         (obj->length / 2)
+#define _MTB_KVSTORE_AREA_SIZE(obj)         (((obj)->length) / 2)
 #define _MTB_KVSTORE_AREA_HEADER_OFFSET     (0U)
 #define _MTB_KVSTORE_CRC_INIT_VAL           (0xFFFFU)
 
@@ -72,7 +98,7 @@ typedef struct
     const _mtb_kvstore_update_record_info_t* update_rec_info;
 } _mtb_kvstore_record_info_t;
 
-static char* _mtb_kvstore_area_rec_key = "MTBAREAIDX";
+static const char* _mtb_kvstore_area_rec_key = "MTBAREAIDX";
 
 /*************************** Internal Helper Functions *****************************/
 
@@ -225,10 +251,10 @@ uint16_t _mtb_kvstore_crc16(const uint8_t* data, uint32_t length, uint16_t init_
     int i;
     while (length--)
     {
-        crc ^= *data++ << 8;
+        crc ^= ((uint32_t)*data++) << 8;
         for (i = 0; i < 8; i++)
         {
-            crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+            crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
         }
     }
     return crc & 0xffff;
@@ -463,7 +489,7 @@ static cy_rslt_t _mtb_kvstore_validate_key(mtb_kvstore_t* obj, uint32_t key_addr
             return result;
         }
 
-        if (memcmp(user_key, obj->transaction_buffer, transfer_size) != 0)
+        if (memcmp((uint8_t*)user_key, obj->transaction_buffer, transfer_size) != 0)
         {
             return MTB_KVSTORE_ITEM_NOT_FOUND_ERROR;
         }
@@ -505,7 +531,7 @@ static cy_rslt_t _mtb_kvstore_read_record(mtb_kvstore_t* obj,
         return result;
     }
 
-    if ((record_header->magic == 0xFFFFFFFF) || (record_header->magic == 0))
+    if ((record_header->magic == 0xFFFFFFFFU) || (record_header->magic == 0))
     {
         return MTB_KVSTORE_ERASED_DATA_ERROR;
     }
@@ -525,7 +551,7 @@ static cy_rslt_t _mtb_kvstore_read_record(mtb_kvstore_t* obj,
     if ((data != NULL) && (data_size != NULL) && (*data_size < record_header->data_size))
     {
         *data_size = record_header->data_size;
-        return MTB_KVSTORE_INVALID_DATA_ERROR;
+        return MTB_KVSTORE_BUFFER_TOO_SMALL;
     }
 
     crc = _mtb_kvstore_get_header_crc(record_header, crc);
@@ -592,6 +618,105 @@ static cy_rslt_t _mtb_kvstore_read_record(mtb_kvstore_t* obj,
     if (record_header->crc != crc)
     {
         return MTB_KVSTORE_INVALID_DATA_ERROR;
+    }
+
+    if (data_size != NULL)
+    {
+        *data_size = record_header->data_size;
+    }
+
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// _mtb_kvstore_read_partial_record
+//--------------------------------------------------------------------------------------------------
+static cy_rslt_t _mtb_kvstore_read_partial_record(mtb_kvstore_t* obj,
+                                                  uint32_t area_address,
+                                                  uint32_t offset,
+                                                  _mtb_kvstore_record_header_t* record_header,
+                                                  const char* key,
+                                                  bool validate_key,
+                                                  uint8_t* data,
+                                                  uint32_t* data_size,
+                                                  const uint32_t offset_bytes)
+{
+    CY_ASSERT(obj != NULL);
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+
+    uint32_t record_start_addr = area_address + offset;
+    uint8_t header_size = sizeof(_mtb_kvstore_record_header_t);
+
+    CY_ASSERT(record_header != NULL);
+
+    // Read header for the record
+    result =
+        obj->bd->read(obj->bd->context, record_start_addr, header_size, (uint8_t*)record_header);
+    if (result != CY_RSLT_SUCCESS)
+    {
+        return result;
+    }
+
+    // Improper use case: reading after the value ended
+    if (offset_bytes > record_header->data_size)
+    {
+        return MTB_KVSTORE_BAD_PARAM_ERROR;
+    }
+
+    if ((record_header->magic == 0xFFFFFFFFU) || (record_header->magic == 0U))
+    {
+        return MTB_KVSTORE_ERASED_DATA_ERROR;
+    }
+
+    if (record_header->magic != _MTB_KVSTORE_HEADER_MAGIC)
+    {
+        return MTB_KVSTORE_INVALID_DATA_ERROR;
+    }
+
+    if ((record_header->key_size == 0U) || (record_header->key_size >= MTB_KVSTORE_MAX_KEY_SIZE))
+    {
+        return MTB_KVSTORE_INVALID_DATA_ERROR;
+    }
+
+    // Copy key into the provided key area
+    uint32_t key_addr = record_start_addr + record_header->header_size;
+    if (key != NULL)
+    {
+        if (validate_key)
+        {
+            result = _mtb_kvstore_validate_key(obj, key_addr, key, record_header->key_size);
+            if (result != CY_RSLT_SUCCESS)
+            {
+                return result;
+            }
+        }
+        else
+        {
+            result = obj->bd->read(obj->bd->context, key_addr, record_header->key_size,
+                                   (uint8_t*)key);
+            if (result != CY_RSLT_SUCCESS)
+            {
+                return result;
+            }
+        }
+    }
+
+    uint32_t data_addr = key_addr + record_header->key_size;
+    if ((data != NULL) && (data_size != NULL))
+    {
+        // Don't read past the value in memory
+        if (*data_size > (record_header->data_size - offset_bytes))
+        {
+            *data_size = (record_header->data_size - offset_bytes);
+        }
+
+        // Copy data into the data buffer provided
+        result = obj->bd->read(obj->bd->context, (data_addr + offset_bytes), *data_size, data);
+        if (result != CY_RSLT_SUCCESS)
+        {
+            return result;
+        }
     }
 
     if (data_size != NULL)
@@ -757,7 +882,7 @@ static cy_rslt_t _mtb_kvstore_write_record(mtb_kvstore_t* obj,
 
     if (offset != _MTB_KVSTORE_AREA_HEADER_OFFSET)
     {
-        CY_ASSERT(ram_tbl_info != NULL && size_info != NULL);
+        CY_ASSERT((ram_tbl_info != NULL) && (size_info != NULL));
         // If we wrote the record successfully then update the ram table and consumed size
         _mtb_kvstore_update_ram_table(obj, operation, ram_tbl_info);
         _mtb_kvstore_update_consumed_size(obj, operation, size_info);
@@ -874,7 +999,7 @@ static cy_rslt_t _mtb_kvstore_copy_record(mtb_kvstore_t* obj,
 
     uint32_t record_size = _mtb_kvstore_get_record_size(obj, src_record_addr, header.key_size,
                                                         header.data_size);
-    if (dst_offset + record_size > (_MTB_KVSTORE_AREA_SIZE(obj)))
+    if ((dst_offset + record_size) > (_MTB_KVSTORE_AREA_SIZE(obj)))
     {
         return MTB_KVSTORE_STORAGE_FULL_ERROR;
     }
@@ -1050,7 +1175,7 @@ static cy_rslt_t _mtb_kvstore_build_ram_table(mtb_kvstore_t* obj)
     obj->consumed_size = record_size;
 
     uint32_t offset = record_size;
-    while (offset + sizeof(_mtb_kvstore_record_header_t) < obj->free_space_offset)
+    while ((offset + sizeof(_mtb_kvstore_record_header_t)) < obj->free_space_offset)
     {
         _mtb_kvstore_record_header_t header;
         result = _mtb_kvstore_read_record(obj, obj->active_area_addr, offset, &header,
@@ -1315,7 +1440,7 @@ static cy_rslt_t _mtb_kvstore_write_with_flags(mtb_kvstore_t* obj, const char* k
         return MTB_KVSTORE_STORAGE_FULL_ERROR;
     }
 
-    if (obj->free_space_offset + record_size > _MTB_KVSTORE_AREA_SIZE(obj))
+    if ((obj->free_space_offset + record_size) > _MTB_KVSTORE_AREA_SIZE(obj))
     {
         // If we need to update or delete a key and we do not enough space left. We can do the
         // update or
@@ -1358,7 +1483,7 @@ static cy_rslt_t _mtb_kvstore_write_with_flags(mtb_kvstore_t* obj, const char* k
 
     // We check that we have enough space earlier so when we get here we must
     // have enough space.
-    CY_ASSERT(obj->free_space_offset + record_size <= _MTB_KVSTORE_AREA_SIZE(obj));
+    CY_ASSERT((obj->free_space_offset + record_size) <= _MTB_KVSTORE_AREA_SIZE(obj));
 
     _mtb_kvstore_update_ram_table_info_t ram_tbl_info =
     {
@@ -1502,18 +1627,36 @@ cy_rslt_t mtb_kvstore_write(mtb_kvstore_t* obj, const char* key, const uint8_t* 
 
 
 //--------------------------------------------------------------------------------------------------
-// mtb_kvstore_read
+// mtb_kvstore_key_exists
 //--------------------------------------------------------------------------------------------------
-cy_rslt_t mtb_kvstore_read(mtb_kvstore_t* obj, const char* key, uint8_t* data,
-                           uint32_t* size)
+cy_rslt_t mtb_kvstore_key_exists(mtb_kvstore_t* obj, const char* key)
 {
     if (!_mtb_kvstore_is_valid_key(key))
     {
         return MTB_KVSTORE_BAD_PARAM_ERROR;
     }
 
-    // If data buffer is passed but size is NULL or 0;
-    if ((data != NULL) && ((size == NULL) || (*size == 0)))
+    cy_rslt_t result = _mtb_kvstore_lock(obj);
+    if (result != CY_RSLT_SUCCESS)
+    {
+        return result;
+    }
+
+    uint32_t ram_tbl_idx;
+    uint16_t hash;
+    result = _mtb_kvstore_find_record_in_ram_table(obj, key, &ram_tbl_idx, &hash, NULL);
+
+    _mtb_kvstore_unlock(obj);
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// mtb_kvstore_value_size
+//--------------------------------------------------------------------------------------------------
+cy_rslt_t mtb_kvstore_value_size(mtb_kvstore_t* obj, const char* key, uint32_t* size)
+{
+    if (!_mtb_kvstore_is_valid_key(key))
     {
         return MTB_KVSTORE_BAD_PARAM_ERROR;
     }
@@ -1532,11 +1675,125 @@ cy_rslt_t mtb_kvstore_read(mtb_kvstore_t* obj, const char* key, uint8_t* data,
         _mtb_kvstore_record_header_t header;
         result = _mtb_kvstore_read_record(obj, obj->active_area_addr,
                                           obj->ram_table[ram_tbl_idx].offset, &header, key, true,
+                                          NULL, size);
+    }
+
+    _mtb_kvstore_unlock(obj);
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// mtb_kvstore_read
+//--------------------------------------------------------------------------------------------------
+cy_rslt_t mtb_kvstore_read(mtb_kvstore_t* obj, const char* key, uint8_t* data,
+                           uint32_t* size)
+{
+    if (!_mtb_kvstore_is_valid_key(key))
+    {
+        return MTB_KVSTORE_BAD_PARAM_ERROR;
+    }
+
+    // If data buffer is passed but size is NULL or 0
+    if ((data != NULL) && ((size == NULL) || (*size == 0)))
+    {
+        return MTB_KVSTORE_BAD_PARAM_ERROR;
+    }
+
+    cy_rslt_t result = _mtb_kvstore_lock(obj);
+    if (result != CY_RSLT_SUCCESS)
+    {
+        return result;
+    }
+
+    uint32_t ram_tbl_idx;
+    uint16_t hash;
+    result = _mtb_kvstore_find_record_in_ram_table(obj, key, &ram_tbl_idx, &hash, NULL);
+    if (result == CY_RSLT_SUCCESS)
+    {
+        _mtb_kvstore_record_header_t header;
+        uint32_t data_size = *size;
+        result = _mtb_kvstore_read_record(obj, obj->active_area_addr,
+                                          obj->ram_table[ram_tbl_idx].offset, &header, key, true,
                                           data, size);
+
+        // Fill excess buffer space with 0's
+        if ((data != NULL) && (*size < data_size))
+        {
+            // memset with size 0 is well defined (no effect)
+            (void)memset(&(data[*size]), 0, (data_size - *size));
+        }
     }
 
     _mtb_kvstore_unlock(obj);
 
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// mtb_kvstore_read_partial
+//--------------------------------------------------------------------------------------------------
+cy_rslt_t mtb_kvstore_read_partial(mtb_kvstore_t* obj, const char* key, uint8_t* data,
+                                   uint32_t* size, const uint32_t offset_bytes)
+{
+    if (!_mtb_kvstore_is_valid_key(key))
+    {
+        return MTB_KVSTORE_BAD_PARAM_ERROR;
+    }
+
+    // If data buffer is passed but size is NULL or 0;
+    if ((data != NULL) && ((size == NULL) || (*size == 0U)))
+    {
+        return MTB_KVSTORE_BAD_PARAM_ERROR;
+    }
+
+    cy_rslt_t result = _mtb_kvstore_lock(obj);
+    if (result != CY_RSLT_SUCCESS)
+    {
+        return result;
+    }
+
+    uint32_t ram_tbl_idx;
+    uint16_t hash;
+    result = _mtb_kvstore_find_record_in_ram_table(obj, key, &ram_tbl_idx, &hash, NULL);
+    if (result == CY_RSLT_SUCCESS)
+    {
+        uint32_t data_size = *size;
+        _mtb_kvstore_record_header_t header;
+        result = _mtb_kvstore_read_partial_record(obj, obj->active_area_addr,
+                                                  obj->ram_table[ram_tbl_idx].offset, &header,
+                                                  key, true, data, size, offset_bytes);
+        if (result != CY_RSLT_SUCCESS)
+        {
+            _mtb_kvstore_unlock(obj);
+            return result;
+        }
+
+        // Fill excess buffer space with 0's
+        if ((data != NULL) && ((*size - offset_bytes) < data_size))
+        {
+            // memset with size 0 is well defined (no effect)
+            (void)memset(&(data[*size - offset_bytes]), 0, (data_size - (*size - offset_bytes)));
+        }
+
+        // Inform caller if the full value could not fit in buffer & indicate how many bytes were
+        // copied over
+        if (data != NULL)
+        {
+            if ((*size - offset_bytes) > data_size)
+            {
+                result = MTB_KVSTORE_BUFFER_TOO_SMALL;
+                *size = data_size;
+            }
+            else
+            {
+                *size = *size - offset_bytes;
+            }
+        }
+    }
+
+    _mtb_kvstore_unlock(obj);
     return result;
 }
 
@@ -1625,6 +1882,36 @@ void mtb_kvstore_deinit(mtb_kvstore_t* obj)
 uint32_t mtb_kvstore_size(mtb_kvstore_t* obj)
 {
     return obj->consumed_size;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// mtb_kvstore_ensure_capacity
+//--------------------------------------------------------------------------------------------------
+cy_rslt_t mtb_kvstore_ensure_capacity(mtb_kvstore_t* obj, uint32_t size)
+{
+    uint32_t space_without_gc = _MTB_KVSTORE_AREA_SIZE(obj) - obj->free_space_offset;
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+    if (space_without_gc < size) /* Will always be true if size is MTB_KVSTORE_ENSURE_MAX */
+    {
+        result = _mtb_kvstore_garbage_collection(obj, NULL);
+    }
+
+    /* Put this check after the garbage collection operation, even though we have enough
+     * information before garbage collection runs to know whether it will be able to
+     * free up enough space. That way, success or failure, we always make as much space
+     * available as we can. */
+    if ((CY_RSLT_SUCCESS == result) && (mtb_kvstore_remaining_size(obj) < size))
+    {
+        /* Don't error on ENSURE_MAX because that is deliberately larger than our storage
+         * is ever likely to be, so as to signify that we should always run garbage collection */
+        if (MTB_KVSTORE_ENSURE_MAX != size)
+        {
+            result = MTB_KVSTORE_STORAGE_FULL_ERROR;
+        }
+    }
+
+    return result;
 }
 
 

@@ -6,7 +6,9 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2021 Cypress Semiconductor Corporation
+ * Copyright 2018-2022 Cypress Semiconductor Corporation (an Infineon company) or
+ * an affiliate of Cypress Semiconductor Corporation
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,11 +45,11 @@ extern "C" {
  *
  * \section section_kvstore_getting_started Getting Started
  * This section provides steps for getting started with this library by providing examples
- * using the [Serial Flash](https://github.com/cypresssemiconductorco/serial-flash) (v1.X) and
- * [HAL Flash driver](https://github.com/cypresssemiconductorco/mtb-hal-cat1)
+ * using the [Serial Flash](https://github.com/infineon/serial-flash) (v1.X) and
+ * [HAL Flash driver](https://github.com/infineon/mtb-hal-cat1)
  * (v1.X) libraries. Note that this section assumes that the required libraries are already
  * included in the application. For more information on how to include libaries in the
- * application please refer to the [ModusToolbox User Guide]
+ * application please refer to the [ModusToolbox™ User Guide]
  * (https://www.cypress.com/products/modustoolbox-software-environment)
  *
  * -# Include the kv-store library header in the application.
@@ -67,14 +69,14 @@ extern "C" {
  *      - Example initialization for serial-flash library. This example configures
  *        the serial-flash using the memory configuration from the BSP. Please refer
  *        to the serial-flash [API Reference Guide]
- * (https://cypresssemiconductorco.github.io/serial-flash/html/index.html)
+ * (https://infineon.github.io/serial-flash/html/index.html)
  *        for further details.
  *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_ser_flash_init
  *
  *      - Example initialization for hal flash driver. This example initializes
  *        the working flash if available otherwise it initializes the main flash.
  *        Please refer to the HAL [API Reference Guide]
- * (https://cypresssemiconductorco.github.io/mtb-hal-cat1/html/modules.html)
+ * (https://infineon.github.io/mtb-hal-cat1/html/modules.html)
  *        for further details.
  *        \snippet kvstore_snip_flash.c snippet_mtb_kvstore_flash_init
  *
@@ -112,6 +114,13 @@ extern "C" {
 #define MTB_KVSTORE_MUTEX_TIMEOUT_MS                (50U)
 #endif
 
+/** When passed as an argument to \ref mtb_kvstore_ensure_capacity,
+ * indicates that cleanup tasks should always be performed regardless
+ * of the amount of space which is currently free, to ensure the maximum
+ * possible amount of free space is available
+ */
+#define MTB_KVSTORE_ENSURE_MAX (0xFFFFFFFFu)
+
 /** An invalid parameter value is passed in. */
 #define MTB_KVSTORE_BAD_PARAM_ERROR                 \
     CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_MIDDLEWARE_KVSTORE, 0)
@@ -135,12 +144,16 @@ extern "C" {
 /** The storage is full. */
 #define MTB_KVSTORE_STORAGE_FULL_ERROR              \
     CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_MIDDLEWARE_KVSTORE, 6)
+/** Buffer provided is too small for value found. */
+#define MTB_KVSTORE_BUFFER_TOO_SMALL                \
+    CY_RSLT_CREATE(CY_RSLT_TYPE_ERROR, CY_RSLT_MODULE_MIDDLEWARE_KVSTORE, 7)
 
 /** Function prototype for reading data from the block device.
  *
  * @param[in]  context  Context object that is passed into \ref mtb_kvstore_init
  * @param[in]  addr     Address to read the data from the block device. This address
  *                      is passed in as start_addr + offset.
+ * @param[in]  length   Length of the data that needs to be read.
  * @param[out] buf      Buffer to read the data.
  * @return Result of the read operation.
  */
@@ -152,6 +165,7 @@ typedef cy_rslt_t (* mtb_kvstore_bd_read)(void* context, uint32_t addr, uint32_t
  * @param[in]  context  Context object that is passed into \ref mtb_kvstore_init
  * @param[in]  addr     Address to program the data into the block device. This address
  *                      is passed in as start_addr + offset.
+ * @param[in]  length   Length of the data that needs to be written
  * @param[out] buf      Data that needs to be written
  * @return Result of the program operation.
  */
@@ -163,7 +177,7 @@ typedef cy_rslt_t (* mtb_kvstore_bd_program)(void* context, uint32_t addr, uint3
  * @param[in]  context  Context object that is passed into \ref mtb_kvstore_init
  * @param[in]  addr     Address to read the data from the device. This address
  *                      is passed in as start_addr + offset.
- * @param[out] length   length of the data that needs to be erased.
+ * @param[in]  length   Length of the data that needs to be erased.
  * @return Result of the erase operation.
  */
 typedef cy_rslt_t (* mtb_kvstore_bd_erase)(void* context, uint32_t addr, uint32_t length);
@@ -301,6 +315,41 @@ cy_rslt_t mtb_kvstore_write(mtb_kvstore_t* obj, const char* key, const uint8_t* 
 cy_rslt_t mtb_kvstore_read(mtb_kvstore_t* obj, const char* key, uint8_t* data,
                            uint32_t* size);
 
+/** Read data associated with a key. If buffer is too small, will partially read and fill buffer.
+ *  No corruption checking is performed.
+ *
+ * @param[in]       obj      Pointer to a kv-store object
+ * @param[in]       key      Lookup key for the data.
+ * @param[out]      data     Pointer to the start of the buffer for the data to be read into.
+ * @param[in,out]   size     [in] Total size of the data in bytes. [out] Number of bytes read into
+ *                           buffer. If a data buffer is provided then the size cannot be NULL
+ *                           or 0.
+ * @param[in]       offset_bytes Number of bytes to skip at the start the value read into data
+ *
+ *  @return Result of the read operation.
+ */
+cy_rslt_t mtb_kvstore_read_partial(mtb_kvstore_t* obj, const char* key, uint8_t* data,
+                                   uint32_t* size, const uint32_t offset_bytes);
+
+/** Check if a key is stored in memory
+ *
+ * @param[in]   obj     Pointer to a kv-store object
+ * @param[in]   key     Lookup key
+ *
+ * @return Result of the key_exists operation
+ */
+cy_rslt_t mtb_kvstore_key_exists(mtb_kvstore_t* obj, const char* key);
+
+/** Get the size in bytes of data in memory corresponding to a given key.
+ *
+ * @param[in]   obj     Pointer to a kv-store object
+ * @param[in]   key     Lookup key for the data
+ * @param[out]  size    Size of data in bytes
+ *
+ * @return Result of the value size operation
+ */
+cy_rslt_t mtb_kvstore_value_size(mtb_kvstore_t* obj, const char* key, uint32_t* size);
+
 /** Delete a key value pair
  *
  * \note This function will return CY_RSLT_SUCCESS if the key cannot be found in the storage.
@@ -327,6 +376,23 @@ uint32_t mtb_kvstore_size(mtb_kvstore_t* obj);
  * @return      Size of storage free in bytes.
  */
 uint32_t mtb_kvstore_remaining_size(mtb_kvstore_t* obj);
+
+/** Tries to make the specified amount of space available
+ *  for immediate use. If necessary, internal cleanup operations
+ *  will be executed to make additional space available, so this
+ * is a potentially long-running operation.
+ *
+ * @param[in]   obj  Pointer to a kv-store object
+ * @param[in]   size Amount of space to ensure is available, in bytes.
+ *                   To always perform cleanup operations regardless
+ *                   of the amount of space currently free,
+ *                   use \ref MTB_KVSTORE_ENSURE_MAX.
+ *
+ * @return      Result of the operation. If `size` is not \ref MTB_KVSTORE_ENSURE_MAX
+ *              and it is not possible to make the requested amount of space
+ *              available, returns \ref MTB_KVSTORE_STORAGE_FULL_ERROR.
+ */
+cy_rslt_t mtb_kvstore_ensure_capacity(mtb_kvstore_t* obj, uint32_t size);
 
 /** Reset kv-store storage.
  *
