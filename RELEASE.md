@@ -5,6 +5,8 @@ The key value storage library provides an API enabling use of non-volatile stora
 APIs for storing key-value pairs of data in non-volatile storage.
 
 ### What Changed?
+#### v1.1.1
+* Fixed NULL dereference in mtb_kvstore_read function when checking if key exists in storage by passing NULL into both _data_ and _size_ parameters
 #### v1.1.0
 * Added new function: mtb_kvstore_ensure_capacity
 * Added new cy_rslt_t return type: MTB_KVSTORE_BUFFER_TOO_SMALL

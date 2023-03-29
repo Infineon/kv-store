@@ -1712,7 +1712,17 @@ cy_rslt_t mtb_kvstore_read(mtb_kvstore_t* obj, const char* key, uint8_t* data,
     if (result == CY_RSLT_SUCCESS)
     {
         _mtb_kvstore_record_header_t header;
-        uint32_t data_size = *size;
+        uint32_t data_size;
+
+        if (size == NULL)
+        {
+            data_size = 0UL;
+        }
+        else
+        {
+            data_size = *size;
+        }
+
         result = _mtb_kvstore_read_record(obj, obj->active_area_addr,
                                           obj->ram_table[ram_tbl_idx].offset, &header, key, true,
                                           data, size);
