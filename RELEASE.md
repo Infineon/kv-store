@@ -5,6 +5,9 @@ The key value storage library provides an API enabling use of non-volatile stora
 APIs for storing key-value pairs of data in non-volatile storage.
 
 ### What Changed?
+#### v2.0.0
+* Replace the kv-store specific block device interface with the standard mtb-block-storage interface
+* Add ability to override the default `malloc` and `free` functions for custom dynamic memory allocation
 #### v1.1.1
 * Fixed NULL dereference in mtb_kvstore_read function when checking if key exists in storage by passing NULL into both _data_ and _size_ parameters
 #### v1.1.0
@@ -26,7 +29,7 @@ This version of the Key Value Storage Library was validated for compatibility wi
 | :---                                      | :----:  |
 | ModusToolbox™ Software Environment        | 2.4.0   |
 | GCC Compiler                              | 10.3.1  |
-| IAR Compiler                              | 8.4     |
+| IAR Compiler                              | 9.40.2  |
 | ARM Compiler                              | 6.11    |
 
 Minimum required ModusToolbox™ Software Environment: v2.0
@@ -39,4 +42,4 @@ Use the following links for more information, as needed:
 * [ModusToolbox™](https://www.cypress.com/products/modustoolbox-software-environment)
 
 ---
-© Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation, 2021.
+© Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation, 2021-2023.

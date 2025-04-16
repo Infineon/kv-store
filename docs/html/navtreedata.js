@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "Key Value Storage (kv-store)", "index.html", [
+  [ "(kv-store)", "index.html", [
     [ "Key Value Storage Library", "index.html", [
       [ "Overview", "index.html#autotoc_md1", null ],
       [ "Features", "index.html#autotoc_md2", null ],

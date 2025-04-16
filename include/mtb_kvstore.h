@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "cy_result.h"
+#include "mtb_block_storage.h"
 
 #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
 #include "cyabs_rtos.h"
@@ -44,63 +45,54 @@ extern "C" {
  * storage.
  *
  * \section section_kvstore_getting_started Getting Started
- * This section provides steps for getting started with this library by providing examples
- * using the [Serial Flash](https://github.com/infineon/serial-flash) (v1.X) and
- * [HAL Flash driver](https://github.com/infineon/mtb-hal-cat1)
- * (v1.X) libraries. Note that this section assumes that the required libraries are already
- * included in the application. For more information on how to include libaries in the
- * application please refer to the [ModusToolbox™ User Guide]
- * (https://www.cypress.com/products/modustoolbox-software-environment)
+ * This section provides steps for getting started with this library by using the block
+ * storage interface.[block-storage] (https://github.com/infineon/block-storage)
  *
  * -# Include the kv-store library header in the application.
- *    \snippet kvstore_snip_serial.c snippet_mtb_kvstore_include
+ *    \snippet kvstore_snip.c snippet_mtb_kvstore_include
  *
- * -# Implement the block device interface. The following snippets can be copied into
- * the application. If neither the serial-flash nor HAL flash driver is being used to communicate
- * with the
+ * -# Initialize the underlying storage. This could be done using either the HAL NVM
+ * or Serial Memory depending on the storage
+ *      - Example initialization for hal API 3.0 nvm driver
+ *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_hal_nvm
+ *      - Example initialization for serial memory driver
+ *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_ser_mem
+ *      - Example initialization for hal API 2.0 nvm driver
+ *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_classic_hal_nvm
+ *
+ * -# Create the block storage interface using the HAL NVM or the serial memory.If neither the
+ * HAL NVM nor serial memory driver is being used to communicate  with the
  * storage device, the application must provide a custom implementation of the block device
  * interface.
- *      - Example implementation using serial-flash library.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_ser_flash_bd
- *      - Example implementation using hal flash driver.
- *        \snippet kvstore_snip_flash.c snippet_mtb_kvstore_flash_bd
- *
- * -# Initialize the block device.
- *      - Example initialization for serial-flash library. This example configures
- *        the serial-flash using the memory configuration from the BSP. Please refer
- *        to the serial-flash [API Reference Guide]
- * (https://infineon.github.io/serial-flash/html/index.html)
- *        for further details.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_ser_flash_init
- *
- *      - Example initialization for hal flash driver. This example initializes
- *        the working flash if available otherwise it initializes the main flash.
- *        Please refer to the HAL [API Reference Guide]
- * (https://infineon.github.io/mtb-hal-cat1/html/modules.html)
- *        for further details.
- *        \snippet kvstore_snip_flash.c snippet_mtb_kvstore_flash_init
+ *      - Example implementation using block storage HAL 3.0 NVM interface
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_hal_nvm
+ *      - Example implementation using block storage serial-memory interface
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_ser_mem
+ *      - Example implementation using block storage HAL Classic NVM interface
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_classic_hal_nvm
  *
  * -# Initialize the kv-store library.
  *      - Set the start address and length.
- *          - If using the serial-flash library, for this example we define the space
+ *          - If using the hal-nvm driver, for this example the address space
+ *            provided starts 16 pages from the end of the nvm. Note that if
+ *            the device does not have a working flash (i.e. using main
+ *            flash) care must be taken to ensure that the space allocated below is
+ *            not used by anything else (for eg. Application image).
+ *            \snippet kvstore_snip.c snippet_mtb_kvstore_addr_len_hal_nvm
+ *          - If using the serial-memory library, for this example we define the space
  *            provided to the kv-store library to be the size of 2 sectors.
- *            \snippet kvstore_snip_serial.c snippet_mtb_kvstore_ser_flash_addr_len
- *          - If using the hal flash driver, for this example the address space
- *            provided starts 16 pages from the end of the flash. Note that
- *            if the device does not have a working flash (i.e. using main flash) care must
- *            be taken to ensure that the space allocated below is not used by anything
- *            (for eg. Application image).
- *            \snippet kvstore_snip_flash.c snippet_mtb_kvstore_flash_addr_len
- *      - Call \ref mtb_kvstore_init by passing the start address, length and block device.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_init
+ *            \snippet kvstore_snip.c snippet_mtb_kvstore_addr_len_ser_mem
+ *      - Call \ref mtb_kvstore_init by passing the start address, length, block device
+ *         and the optional memory allocate and free function pointers
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_init
  *
  * -# The library should now be ready to perform operations.
  *      - Write operation.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_write
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_write
  *      - Read operation.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_read
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_read
  *      - Delete operation.
- *        \snippet kvstore_snip_serial.c snippet_mtb_kvstore_delete
+ *        \snippet kvstore_snip.c snippet_mtb_kvstore_delete
  */
 
 #if !defined(MTB_KVSTORE_MAX_KEY_SIZE)
@@ -209,18 +201,20 @@ typedef uint32_t (* mtb_kvstore_bd_program_size)(void* context, uint32_t addr);
  */
 typedef uint32_t (* mtb_kvstore_bd_erase_size)(void* context, uint32_t addr);
 
-/** Block device interface */
-typedef struct
-{
-    mtb_kvstore_bd_read         read;           /**< Function to read from device */
-    mtb_kvstore_bd_program      program;        /**< Function to program to device */
-    mtb_kvstore_bd_erase        erase;          /**< Function to erase device */
-    mtb_kvstore_bd_read_size    read_size;      /**< Function to get read size for an address */
-    mtb_kvstore_bd_program_size program_size;   /**< Function to get program size for an address */
-    mtb_kvstore_bd_erase_size   erase_size;     /**< Function to get erase size for an address */
-    void*                       context;        /**< Context object that can be used in the block
-                                                   device implementation */
-} mtb_kvstore_bd_t;
+/** Function prototype for allocating memory to be used for kv-store internal operations.
+ *
+ * @param[in]  size     Size in bytes of the memory to be allocated
+ * @return Pointer to the allocated memory in case the memory allocation is success or
+ *         NULL in case of failure.
+ */
+typedef void* (* mtb_kvstore_allocate_memory_t)(size_t size);
+
+/** Function prototype for freeing memory
+ *
+ * @param[in]  ptr     Pointer to the memory block to be freed
+ * @return None.
+ */
+typedef void (* mtb_kvstore_free_memory_t)(void* ptr);
 
 /** \cond INTERNAL */
 
@@ -236,7 +230,7 @@ typedef struct
 {
     uint32_t                        start_addr;
     uint32_t                        length;
-    const mtb_kvstore_bd_t*         bd;
+    const mtb_block_storage_t*      bd;
 
     mtb_kvstore_ram_table_entry_t*  ram_table;
     uint32_t                        num_entries;
@@ -252,6 +246,8 @@ typedef struct
     uint16_t                        active_area_version;
 
     uint32_t                        consumed_size;
+    mtb_kvstore_allocate_memory_t   alloc_memory;
+    mtb_kvstore_free_memory_t       free_memory;
 
     #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
     cy_mutex_t                      mtb_kvstore_mutex;
@@ -260,14 +256,24 @@ typedef struct
 
 /** \endcond */
 
-/** Initialize a instance kv-store library
+/** Initialize an instance of the kv-store library
  *
  * @param[out]  obj          Pointer to a kv-store object. The caller must allocate the memory
  *                           for this object but the init function will initialize its contents.
  * @param[in]   start_addr   Start address for the memory. All addresses when performing memory
  *                           operations will be offset from this address. See notes for constraints.
  * @param[in]   length       Total space available in bytes. See notes for constraints.
- * @param[in]   block_device Block device interface for the underlying memory to be used.
+ * @param[in]   bsd          Block storage device interface for the underlying memory to be used.
+ * @param[in]   alloc_memory Optional parameter that could be used to allocate the requested memory
+ *                           size. Application could set up this function pointer if they desire to
+ *                           allocate the memory from specific memory region. If not null, KV Store
+ *                           uses the specified function for allocating the memory needed for
+ *                           internal operations. When specified as NULL, KV Store uses the malloc
+ *                           function to allocate the memory
+ * @param[in]   free_memory  Optional parameter that could be used to free the memory block
+ *                           allocated using the 'alloc_memory' function.If not null, KV Store
+ *                           uses the specified function for freeing the memory. When specified
+ *                           as NULL, KV Store uses the free function to free the memory
  *
  * Address space considerations
  * \note The start_addr and start_addr + length must be aligned to the erase sector boundary.
@@ -278,6 +284,8 @@ typedef struct
  * \note The space provided to the library provided must have the uniform characteristics (erase,
  *       program and read size). A space spanning regions with different characteristics in a
  *       hybrid sector device is not supported and if provided may lead to undefined behavior.
+ * \note If the application desires to use specific memory region for KV Store internal operation,
+ *       it should set up both the alloc_memory and free_memory functions.
  *
  * RTOS considerations
  * \note In a RTOS environment the library must be initialized after the RTOS kernel has started.
@@ -285,7 +293,9 @@ typedef struct
  * @return Result of the initialization operation.
  */
 cy_rslt_t mtb_kvstore_init(mtb_kvstore_t* obj, uint32_t start_addr, uint32_t length,
-                           const mtb_kvstore_bd_t* block_device);
+                           const mtb_block_storage_t* bsd,
+                           mtb_kvstore_allocate_memory_t alloc_memory,
+                           mtb_kvstore_free_memory_t free_memory);
 
 /** Store a key value pair
  *

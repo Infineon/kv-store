@@ -12,12 +12,8 @@ This library provides a convenient way to store information as key-value pairs i
 
 ## Storage
 The utility operates on the assumption that the underlying storage is a block device which may not
-have the same program and erase sizes. The application is required to provide an implementation for
-a block device interface (`mtb_kvstore_bd_t`) that describes the characteristics of the underlying
-storage and defines basic operations (read, write, erase). See `mtb_kvstore_init` for a description
-of the constraints that the storage must satisfy. Code snippets using the serial-flash library
-(External Flash) and HAL flash driver (Internal Flash) are provided as example implementations of
-the storage interface in the Getting Started section in the API Reference Guide.
+have the same program and erase sizes. The application is required to initialize and create the block
+storage interface(`mtb_block_storage_t`).
 
 ## Keys and Values
 ### Keys
@@ -27,7 +23,7 @@ desired value to application Makefile.
 
 ### Values
 Values are arbitrary length binary data. By default it is assumed that each value (plus the header info of
-~20 bytes) is less than the `mtb_kvstore_bd_t` `erase_size`. If this is not true, a define
+~20 bytes) is less than the `mtb_block_storage_t` `erase_size`. If this is not true, a define
 `MTB_KVSTORE_MAX_VALUE_SIZE` must be defined with the actual max value size.
 NOTE: This define is not currently used, but will be in a future update. Setting it now will help ensure
 the application works properly with newer versions of the kv-store library.
@@ -119,6 +115,7 @@ typical when the active area becomes full. Hence, they must not be called from t
 ## Dependencies
 * [abstraction-rtos](https://github.com/infineon/abstraction-rtos) library if the `CY_RTOS_AWARE`
 macro is defined in the Makefile
+* [block-storage](https://github.com/infineon/block-storage) library
 
 ## More information
 * [API Reference Guide](https://infineon.github.io/kv-store/html/modules.html)

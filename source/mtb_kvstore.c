@@ -223,7 +223,7 @@ static inline bool _mtb_kvstore_is_aligned(uint32_t val, uint32_t size)
 static uint32_t _mtb_kvstore_get_record_size(mtb_kvstore_t* obj, uint32_t record_offset,
                                              uint32_t key_size, uint32_t data_size)
 {
-    uint32_t prog_size = obj->bd->program_size(obj->bd->context, record_offset);
+    uint32_t prog_size = obj->bd->get_program_size(obj->bd->context, record_offset);
     return _mtb_kvstore_align_up(sizeof(_mtb_kvstore_record_header_t) + key_size + data_size,
                                  prog_size);
 }
@@ -248,7 +248,7 @@ uint16_t _mtb_kvstore_crc16(const uint8_t* data, uint32_t length, uint16_t init_
 {
     //Using CRC-16/CCITT-0 Algorithm
     uint32_t crc = init_crc;
-    int i;
+    uint8_t i;
     while (length--)
     {
         crc ^= ((uint32_t)*data++) << 8;
@@ -268,7 +268,7 @@ static cy_rslt_t _mtb_kvstore_increment_max_keys(mtb_kvstore_t* obj)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
     uint32_t new_entry_count = obj->max_entries * 2;
-    mtb_kvstore_ram_table_entry_t* new_table = (mtb_kvstore_ram_table_entry_t*)malloc(
+    mtb_kvstore_ram_table_entry_t* new_table = (mtb_kvstore_ram_table_entry_t*)obj->alloc_memory(
         new_entry_count * sizeof(mtb_kvstore_ram_table_entry_t));
     if (new_table != NULL)
     {
@@ -357,28 +357,78 @@ static void _mtb_kvstore_update_consumed_size(mtb_kvstore_t* obj,
 
 
 //--------------------------------------------------------------------------------------------------
+//_mtb_kvstore_invalidate_area
+//--------------------------------------------------------------------------------------------------
+static cy_rslt_t _mtb_kvstore_invalidate_area(mtb_kvstore_t* obj, uint32_t address, uint32_t length)
+{
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+
+    /* In case of block devices that does not require erase, invalidate the area
+       by writing zero's to the area */
+    if (false == obj->bd->is_erase_required(obj->bd->context, address, length))
+    {
+        uint32_t loc = address;
+        uint32_t program_size = 0;
+        uint32_t length_remaining = length;
+        memset(obj->transaction_buffer, 0, obj->transaction_buffer_size);
+        while (length_remaining > 0)
+        {
+            program_size =
+                (length_remaining >
+                 obj->transaction_buffer_size) ? obj->transaction_buffer_size : length_remaining;
+            result = obj->bd->program(obj->bd->context, loc, program_size, obj->transaction_buffer);
+            if (result != CY_RSLT_SUCCESS)
+            {
+                break;
+            }
+            loc += program_size;
+            length_remaining -= program_size;
+        }
+    }
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+//_mtb_kvstore_erase_region
+//--------------------------------------------------------------------------------------------------
+static cy_rslt_t _mtb_kvstore_erase_region(mtb_kvstore_t* obj, uint32_t address, uint32_t length)
+{
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+
+    //Erase the region
+    result = obj->bd->erase(obj->bd->context, address, length);
+    if (result == CY_RSLT_SUCCESS)
+    {
+        // Invalidate the region if needed
+        result = _mtb_kvstore_invalidate_area(obj, address, length);
+    }
+    return result;
+}
+
+
+//--------------------------------------------------------------------------------------------------
 //_mtb_kvstore_erase_area
 //--------------------------------------------------------------------------------------------------
 static cy_rslt_t _mtb_kvstore_erase_area(mtb_kvstore_t* obj, uint32_t area_address)
 {
     // This function operates on the assumption that erasing a sector is atomic. We first erase
     // everything but the first sector.
-    uint32_t erase_size = obj->bd->erase_size(obj->bd->context, area_address);
+    uint32_t erase_size = obj->bd->get_erase_size(obj->bd->context, area_address);
 
     // Erase from second sector to the end
     cy_rslt_t result = CY_RSLT_SUCCESS;
     if (erase_size < _MTB_KVSTORE_AREA_SIZE(obj))
     {
-        result = obj->bd->erase(obj->bd->context, area_address + erase_size,
-                                _MTB_KVSTORE_AREA_SIZE(obj) - erase_size);
+        result = _mtb_kvstore_erase_region(obj, area_address + erase_size,
+                                           _MTB_KVSTORE_AREA_SIZE(obj) - erase_size);
     }
 
     if (result == CY_RSLT_SUCCESS)
     {
         // Erase the first sector.
-        result = obj->bd->erase(obj->bd->context, area_address, erase_size);
+        result = _mtb_kvstore_erase_region(obj, area_address, erase_size);
     }
-
     return result;
 }
 
@@ -796,7 +846,7 @@ static cy_rslt_t _mtb_kvstore_buffered_write(mtb_kvstore_t* obj,
 
     if ((*buffer_space_left != obj->transaction_buffer_size) && flush)
     {
-        uint32_t prog_size = obj->bd->program_size(obj->bd->context, *write_address);
+        uint32_t prog_size = obj->bd->get_program_size(obj->bd->context, *write_address);
         uint32_t size = _mtb_kvstore_align_up(obj->transaction_buffer_size - *buffer_space_left,
                                               prog_size);
         result = obj->bd->program(obj->bd->context, *write_address,
@@ -832,7 +882,7 @@ static cy_rslt_t _mtb_kvstore_write_record(mtb_kvstore_t* obj,
     // Calculate write size
     uint32_t record_address = area_address + offset;
     size_t header_size = sizeof(_mtb_kvstore_record_header_t);
-    uint32_t prog_size = obj->bd->program_size(obj->bd->context, record_address);
+    uint32_t prog_size = obj->bd->get_program_size(obj->bd->context, record_address);
 
     // Ensure that the buffer is large enough
     CY_ASSERT(obj->transaction_buffer_size >= header_size);
@@ -1162,8 +1212,8 @@ static cy_rslt_t _mtb_kvstore_build_ram_table(mtb_kvstore_t* obj)
 
     //We initially allocate ram table for 32 entries
     obj->ram_table =
-        (mtb_kvstore_ram_table_entry_t*)malloc(obj->max_entries *
-                                               sizeof(mtb_kvstore_ram_table_entry_t));
+        (mtb_kvstore_ram_table_entry_t*)obj->alloc_memory(obj->max_entries *
+                                                          sizeof(mtb_kvstore_ram_table_entry_t));
     if (NULL == obj->ram_table)
     {
         return MTB_KVSTORE_MEM_ALLOC_ERROR;
@@ -1516,15 +1566,17 @@ static cy_rslt_t _mtb_kvstore_write_with_flags(mtb_kvstore_t* obj, const char* k
 // mtb_kvstore_init
 //--------------------------------------------------------------------------------------------------
 cy_rslt_t mtb_kvstore_init(mtb_kvstore_t* obj, uint32_t start_addr, uint32_t length,
-                           const mtb_kvstore_bd_t* block_device)
+                           const mtb_block_storage_t* bsd,
+                           mtb_kvstore_allocate_memory_t alloc_memory,
+                           mtb_kvstore_free_memory_t free_memory)
 {
-    if ((NULL == obj) || (NULL == block_device) || (length == 0))
+    if ((NULL == obj) || (NULL == bsd) || (length == 0))
     {
         return MTB_KVSTORE_BAD_PARAM_ERROR;
     }
 
     // Check if start addr and start addr + length align with erase sector size
-    uint32_t erase_size = block_device->erase_size(block_device->context, start_addr);
+    uint32_t erase_size = bsd->get_erase_size(bsd->context, start_addr);
     if (!_mtb_kvstore_is_aligned(start_addr,
                                  erase_size) ||
         !_mtb_kvstore_is_aligned(start_addr + length, erase_size))
@@ -1558,22 +1610,22 @@ cy_rslt_t mtb_kvstore_init(mtb_kvstore_t* obj, uint32_t start_addr, uint32_t len
         return result;
     }
 
-    uint32_t prog_size = block_device->program_size(block_device->context, start_addr);
-    uint32_t read_size = block_device->read_size(block_device->context, start_addr);
+    uint32_t prog_size = bsd->get_program_size(bsd->context, start_addr);
+    uint32_t read_size = bsd->get_read_size(bsd->context, start_addr);
     uint32_t buffer_size = (prog_size >= read_size) ? prog_size : read_size;
     if (buffer_size < _MTB_KVSTORE_MIN_BUFF_SIZE)
     {
         buffer_size = _mtb_kvstore_align_up(_MTB_KVSTORE_MIN_BUFF_SIZE, prog_size);
     }
-
-    obj->transaction_buffer = (uint8_t*)malloc(buffer_size);
+    obj->alloc_memory = (alloc_memory != NULL) ? alloc_memory : malloc;
+    obj->free_memory =  (free_memory != NULL) ? free_memory : free;
+    obj->transaction_buffer = (uint8_t*)obj->alloc_memory(buffer_size);
     if (obj->transaction_buffer != NULL)
     {
         obj->transaction_buffer_size = buffer_size;
-        obj->bd = block_device;
+        obj->bd = bsd;
         obj->start_addr = start_addr;
         obj->length = length;
-
         if (result == CY_RSLT_SUCCESS)
         {
             result = _mtb_kvstore_setup_areas(obj);
@@ -1864,12 +1916,12 @@ void mtb_kvstore_deinit(mtb_kvstore_t* obj)
 
     if (obj->transaction_buffer != NULL)
     {
-        free(obj->transaction_buffer);
+        obj->free_memory(obj->transaction_buffer);
     }
 
     if (obj->ram_table != NULL)
     {
-        free(obj->ram_table);
+        obj->free_memory(obj->ram_table);
     }
 
     #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)

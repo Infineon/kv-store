@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Key Value Storage (kv-store)</title>
+<title>(kv-store)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,7 +27,7 @@
  <tr style="height: 56px;">
   <td id="projectlogo"><a href="http://www.cypress.com/"><img alt="Logo" src="logo.png"/></a></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Key Value Storage (kv-store)</div>
+   <div id="projectname">(kv-store)</div>
   </td>
  </tr>
  </tbody>
@@ -84,7 +84,6 @@ $(document).ready(function(){initNavTree('group__group__kvstore.html',''); initR
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -95,216 +94,66 @@ $(document).ready(function(){initNavTree('group__group__kvstore.html',''); initR
 <p >This library provides a convenient way to store information as key-value pairs in non-volatile storage. </p>
 <h1><a class="anchor" id="section_kvstore_getting_started"></a>
 Getting Started</h1>
-<p >This section provides steps for getting started with this library by providing examples using the <a href="https://github.com/infineon/serial-flash">Serial Flash</a> (v1.X) and <a href="https://github.com/infineon/mtb-hal-cat1">HAL Flash driver</a> (v1.X) libraries. Note that this section assumes that the required libraries are already included in the application. For more information on how to include libaries in the application please refer to the <a href="https://www.cypress.com/products/modustoolbox-software-environment">ModusToolbox™ User Guide</a></p>
+<p >This section provides steps for getting started with this library by using the block storage interface.<a href="https://github.com/infineon/block-storage">block-storage</a></p>
 <ol type="1">
 <li>Include the kv-store library header in the application. <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;mtb_kvstore.h&quot;</span></div>
 </div><!-- fragment --></li>
-<li>Implement the block device interface. The following snippets can be copied into the application. If neither the serial-flash nor HAL flash driver is being used to communicate with the storage device, the application must provide a custom implementation of the block device interface.<ul>
-<li>Example implementation using serial-flash library. <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;cycfg_qspi_memslot.h&quot;</span></div>
-<div class="line"><span class="preprocessor">#include &quot;cy_serial_flash_qspi.h&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_read_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_read_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    CY_UNUSED_PARAMETER(addr);</div>
-<div class="line">    <span class="keywordflow">return</span> 1;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_program_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_program_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    <span class="keywordflow">return</span> cy_serial_flash_qspi_get_prog_size(addr);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_erase_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_erase_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    <span class="keywordflow">return</span> cy_serial_flash_qspi_get_erase_size(addr);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_read</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_read(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length, uint8_t* buf)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    <span class="keywordflow">return</span> cy_serial_flash_qspi_read(addr, length, buf);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_program</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_program(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length, <span class="keyword">const</span> uint8_t* buf)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    <span class="keywordflow">return</span> cy_serial_flash_qspi_write(addr, length, buf);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_erase</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_erase(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    <span class="keywordflow">return</span> cy_serial_flash_qspi_erase(addr, length);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <a class="code hl_struct" href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a> block_device =</div>
-<div class="line">{</div>
-<div class="line">    .<a class="code hl_variable" href="group__group__kvstore.html#a405a94199e464120970faaaf987eb3af">read</a>         = bd_read,</div>
-<div class="line">    .program      = bd_program,</div>
-<div class="line">    .erase        = bd_erase,</div>
-<div class="line">    .read_size    = bd_read_size,</div>
-<div class="line">    .program_size = bd_program_size,</div>
-<div class="line">    .erase_size   = bd_erase_size,</div>
-<div class="line">    .context      = NULL</div>
-<div class="line">};</div>
-<div class="ttc" id="agroup__group__kvstore_html_a405a94199e464120970faaaf987eb3af"><div class="ttname"><a href="group__group__kvstore.html#a405a94199e464120970faaaf987eb3af">mtb_kvstore_bd_t::read</a></div><div class="ttdeci">mtb_kvstore_bd_read read</div><div class="ttdoc">Function to read from device.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.h:215</div></div>
-<div class="ttc" id="agroup__group__kvstore_html_structmtb__kvstore__bd__t"><div class="ttname"><a href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a></div><div class="ttdoc">Block device interface.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.h:214</div></div>
+<li>Initialize the underlying storage. This could be done using either the HAL NVM or Serial Memory depending on the storage<ul>
+<li>Example initialization for hal API 3.0 nvm driver <div class="fragment"><div class="line">    mtb_hal_nvm_t nvm_obj;</div>
+<div class="line">    mtb_hal_nvm_region_info_t block_info;</div>
+<div class="line">    cy_rslt_t result = mtb_hal_nvm_setup(&amp;nvm_obj, NULL);</div>
+<div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
+<div class="line">    mtb_hal_nvm_info_t nvm_info;</div>
+<div class="line">    mtb_hal_nvm_get_info(&amp;nvm_obj, &amp;nvm_info);</div>
+<div class="line">    block_info = nvm_info.regions[nvm_info.region_count - 1];</div>
 </div><!-- fragment --></li>
-<li>Example implementation using hal flash driver. <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;cyhal.h&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">static</span> cyhal_flash_t flash_obj;</div>
-<div class="line"><span class="keyword">static</span> cyhal_flash_block_info_t block_info;</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_read_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_read_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    CY_UNUSED_PARAMETER(addr);</div>
-<div class="line">    <span class="keywordflow">return</span> 1;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_program_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_program_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    CY_UNUSED_PARAMETER(addr);</div>
-<div class="line">    <span class="keywordflow">return</span> block_info.page_size;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_erase_size</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> uint32_t bd_erase_size(<span class="keywordtype">void</span>* context, uint32_t addr)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    CY_UNUSED_PARAMETER(addr);</div>
-<div class="line">    <span class="keywordflow">return</span> block_info.sector_size;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_read</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_read(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length, uint8_t* buf)</div>
-<div class="line">{</div>
-<div class="line">    CY_UNUSED_PARAMETER(context);</div>
-<div class="line">    memcpy(buf, (<span class="keyword">const</span> uint8_t*)(addr), length);</div>
-<div class="line">    <span class="keywordflow">return</span> CY_RSLT_SUCCESS;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_program</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_program(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length, <span class="keyword">const</span> uint8_t* buf)</div>
-<div class="line">{</div>
-<div class="line">    uint32_t prog_size = bd_program_size(context, addr);</div>
-<div class="line">    CY_ASSERT(0 == (length % prog_size));</div>
-<div class="line"> </div>
-<div class="line">    <span class="keyword">volatile</span> cy_rslt_t result = CY_RSLT_SUCCESS;</div>
-<div class="line">    <span class="keywordflow">for</span> (uint32_t loc = addr; result == CY_RSLT_SUCCESS &amp;&amp; loc &lt; addr + length;</div>
-<div class="line">         loc += prog_size, buf += prog_size)</div>
-<div class="line">    {</div>
-<div class="line">        result = cyhal_flash_program((cyhal_flash_t*)context, loc, (<span class="keyword">const</span> uint32_t*)buf);</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span> result;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="comment">// bd_erase</span></div>
-<div class="line"><span class="comment">//--------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><span class="keyword">static</span> cy_rslt_t bd_erase(<span class="keywordtype">void</span>* context, uint32_t addr, uint32_t length)</div>
-<div class="line">{</div>
-<div class="line">    uint32_t erase_size = bd_erase_size(context, addr);</div>
-<div class="line">    CY_ASSERT(0 == (length % erase_size));</div>
-<div class="line"> </div>
-<div class="line">    cy_rslt_t result = CY_RSLT_SUCCESS;</div>
-<div class="line">    <span class="keywordflow">for</span> (uint32_t loc = addr; result == CY_RSLT_SUCCESS &amp;&amp; loc &lt; addr + length; loc += erase_size)</div>
-<div class="line">    {</div>
-<div class="line">        result = cyhal_flash_erase((cyhal_flash_t*)context, loc);</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span> result;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <a class="code hl_struct" href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a> block_device =</div>
-<div class="line">{</div>
-<div class="line">    .<a class="code hl_variable" href="group__group__kvstore.html#a405a94199e464120970faaaf987eb3af">read</a>         = bd_read,</div>
-<div class="line">    .program      = bd_program,</div>
-<div class="line">    .erase        = bd_erase,</div>
-<div class="line">    .read_size    = bd_read_size,</div>
-<div class="line">    .program_size = bd_program_size,</div>
-<div class="line">    .erase_size   = bd_erase_size,</div>
-<div class="line">    .context      = &amp;flash_obj</div>
-<div class="line">};</div>
+<li>Example initialization for serial memory driver <div class="fragment"><div class="line">    mtb_serial_memory_t serial_memory_obj;</div>
+<div class="line">    cy_stc_smif_context_t context;</div>
+<div class="line">    <span class="comment">/* Setup the serial memory object */</span></div>
+<div class="line">    cy_rslt_t result = mtb_serial_memory_setup(</div>
+<div class="line">        &amp;serial_memory_obj, MTB_SERIAL_MEMORY_CHIP_SELECT_0,</div>
+<div class="line">        &amp;base_address, &amp;sm_clock, &amp;context, &amp;smif_block_obj);</div>
+</div><!-- fragment --></li>
+<li>Example initialization for hal API 2.0 nvm driver <div class="fragment"><div class="line">    cyhal_nvm_t nvm_obj;</div>
+<div class="line">    cyhal_nvm_region_info_t block_info;</div>
+<div class="line">    cy_rslt_t result = cyhal_nvm_init(&amp;nvm_obj);</div>
+<div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
+<div class="line">    cyhal_nvm_info_t nvm_info;</div>
+<div class="line">    cyhal_nvm_get_info(&amp;nvm_obj, &amp;nvm_info);</div>
+<div class="line">    block_info = nvm_info.regions[nvm_info.region_count - 1];</div>
 </div><!-- fragment --></li>
 </ul>
 </li>
-<li>Initialize the block device.<ul>
-<li>Example initialization for serial-flash library. This example configures the serial-flash using the memory configuration from the BSP. Please refer to the serial-flash <a href="https://infineon.github.io/serial-flash/html/index.html">API Reference Guide</a> for further details. <div class="fragment"><div class="line">    <span class="keyword">const</span> uint32_t qspi_bus_freq_hz = 50000000lu;</div>
-<div class="line">    cy_rslt_t result = cy_serial_flash_qspi_init(smifMemConfigs[0], CYBSP_QSPI_D0,</div>
-<div class="line">                                                 CYBSP_QSPI_D1, CYBSP_QSPI_D2, CYBSP_QSPI_D3, NC,</div>
-<div class="line">                                                 NC, NC, NC,</div>
-<div class="line">                                                 CYBSP_QSPI_SCK, CYBSP_QSPI_SS, qspi_bus_freq_hz);</div>
+<li>Create the block storage interface using the HAL NVM or the serial memory.If neither the HAL NVM nor serial memory driver is being used to communicate with the storage device, the application must provide a custom implementation of the block device interface.<ul>
+<li>Example implementation using block storage HAL 3.0 NVM interface <div class="fragment"><div class="line">    mtb_block_storage_t nvm_bsd;</div>
+<div class="line">    mtb_block_storage_create_hal_nvm(&amp;nvm_bsd, &amp;nvm_obj);</div>
+</div><!-- fragment --></li>
+<li>Example implementation using block storage serial-memory interface <div class="fragment"><div class="line">    <span class="comment">/* Create the block-storage - serial memory object */</span></div>
+<div class="line">    mtb_block_storage_t serial_memory_bsd;</div>
+<div class="line">    mtb_block_storage_create_serial_memory(&amp;serial_memory_bsd, &amp;serial_memory_obj);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
 </div><!-- fragment --></li>
-<li>Example initialization for hal flash driver. This example initializes the working flash if available otherwise it initializes the main flash. Please refer to the HAL <a href="https://infineon.github.io/mtb-hal-cat1/html/modules.html">API Reference Guide</a> for further details. <div class="fragment"><div class="line">    cy_rslt_t result = cyhal_flash_init(&amp;flash_obj);</div>
-<div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="line">    cyhal_flash_info_t flash_info;</div>
-<div class="line">    cyhal_flash_get_info(&amp;flash_obj, &amp;flash_info);</div>
-<div class="line">    block_info = flash_info.blocks[flash_info.block_count - 1];</div>
+<li>Example implementation using block storage HAL Classic NVM interface <div class="fragment"><div class="line">    mtb_block_storage_t nvm_bsd;</div>
+<div class="line">    mtb_block_storage_nvm_create(&amp;nvm_bsd);</div>
 </div><!-- fragment --></li>
 </ul>
 </li>
 <li>Initialize the kv-store library.<ul>
 <li>Set the start address and length.<ul>
-<li>If using the serial-flash library, for this example we define the space provided to the kv-store library to be the size of 2 sectors. <div class="fragment"><div class="line">    uint32_t sector_size = cy_serial_flash_qspi_get_erase_size(0);</div>
-<div class="line">    uint32_t length = sector_size * 2;</div>
-<div class="line">    uint32_t start_addr = 0;</div>
-</div><!-- fragment --></li>
-<li>If using the hal flash driver, for this example the address space provided starts 16 pages from the end of the flash. Note that if the device does not have a working flash (i.e. using main flash) care must be taken to ensure that the space allocated below is not used by anything (for eg. Application image). <div class="fragment"><div class="line">    uint32_t length = 16U * block_info.page_size;</div>
+<li>If using the hal-nvm driver, for this example the address space provided starts 16 pages from the end of the nvm. Note that if the device does not have a working flash (i.e. using main flash) care must be taken to ensure that the space allocated below is not used by anything else (for eg. Application image). <div class="fragment"><div class="line">    uint32_t length = 16U * block_info.block_size;</div>
 <div class="line">    uint32_t start_addr = block_info.start_address + block_info.size - length;</div>
+</div><!-- fragment --></li>
+<li>If using the serial-memory library, for this example we define the space provided to the kv-store library to be the size of 2 sectors. <div class="fragment"><div class="line">    uint32_t start_addr = 0;</div>
+<div class="line">    uint32_t sector_size = serial_memory_bsd.get_erase_size(serial_memory_bsd.context, start_addr);</div>
+<div class="line">    uint32_t length = sector_size * 2;</div>
+<div class="line"> </div>
 </div><!-- fragment --></li>
 </ul>
 </li>
-<li>Call <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> by passing the start address, length and block device. <div class="fragment"><div class="line">    mtb_kvstore_t obj;</div>
-<div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a>(&amp;obj, start_addr, length, &amp;block_device);</div>
+<li>Call <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> by passing the start address, length, block device and the optional memory allocate and free function pointers <div class="fragment"><div class="line">    mtb_kvstore_t      obj;</div>
+<div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a>(&amp;obj, start_addr, length, &amp;nvm_bsd, NULL, NULL);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_ga51e164317709c8d0c02fc07d87e4e780"><div class="ttname"><a href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_kvstore_bd_t *block_device)</div><div class="ttdoc">Initialize a instance kv-store library.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1518</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_ga5fa9ddeac64024562e60999088f638b7"><div class="ttname"><a href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_block_storage_t *bsd, mtb_kvstore_allocate_memory_t alloc_memory, mtb_kvstore_free_memory_t free_memory)</div><div class="ttdoc">Initialize an instance of the kv-store library.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1568</div></div>
 </div><!-- fragment --></li>
 </ul>
 </li>
@@ -312,28 +161,22 @@ Getting Started</h1>
 <li>Write operation. <div class="fragment"><div class="line">    uint8_t data[10];</div>
 <div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>, data, <span class="keyword">sizeof</span>(data));</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_ga209eef7f4603173449de48d3d4775835"><div class="ttname"><a href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size)</div><div class="ttdoc">Store a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1607</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_ga209eef7f4603173449de48d3d4775835"><div class="ttname"><a href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size)</div><div class="ttdoc">Store a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1659</div></div>
 </div><!-- fragment --></li>
 <li>Read operation. <div class="fragment"><div class="line">    uint8_t read_data[10];</div>
 <div class="line">    uint32_t data_size = <span class="keyword">sizeof</span>(read_data);</div>
 <div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>, read_data, &amp;data_size);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_gad2327026f8f741835d012aa0a1f60f14"><div class="ttname"><a href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size)</div><div class="ttdoc">Read data associated with a key.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1689</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_gad2327026f8f741835d012aa0a1f60f14"><div class="ttname"><a href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size)</div><div class="ttdoc">Read data associated with a key.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1741</div></div>
 </div><!-- fragment --></li>
 <li>Delete operation. <div class="fragment"><div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_gafb22467328e29fd0b881eae93679a0f9"><div class="ttname"><a href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key)</div><div class="ttdoc">Delete a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1814</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_gafb22467328e29fd0b881eae93679a0f9"><div class="ttname"><a href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key)</div><div class="ttdoc">Delete a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1866</div></div>
 </div><!-- fragment --> </li>
 </ul>
 </li>
 </ol>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:structmtb__kvstore__bd__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a></td></tr>
-<tr class="memdesc:structmtb__kvstore__bd__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Block device interface.  <a href="group__group__kvstore.html#structmtb__kvstore__bd__t">More...</a><br /></td></tr>
-<tr class="separator:structmtb__kvstore__bd__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ga23dc5337825e5abb56afd1938b41e997"><td class="memItemLeft" align="right" valign="top"><a id="ga23dc5337825e5abb56afd1938b41e997" name="ga23dc5337825e5abb56afd1938b41e997"></a>
@@ -393,12 +236,18 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ga9dcd451cefcdae7d7063aa2e173b948b"><td class="memItemLeft" align="right" valign="top">typedef uint32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#ga9dcd451cefcdae7d7063aa2e173b948b">mtb_kvstore_bd_erase_size</a>) (void *context, uint32_t addr)</td></tr>
 <tr class="memdesc:ga9dcd451cefcdae7d7063aa2e173b948b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function prototype to get the erase size of the block device for a specific address.  <a href="group__group__kvstore.html#ga9dcd451cefcdae7d7063aa2e173b948b">More...</a><br /></td></tr>
 <tr class="separator:ga9dcd451cefcdae7d7063aa2e173b948b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf4640989209ce778da48555edeb7f531"><td class="memItemLeft" align="right" valign="top">typedef void *(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#gaf4640989209ce778da48555edeb7f531">mtb_kvstore_allocate_memory_t</a>) (size_t size)</td></tr>
+<tr class="memdesc:gaf4640989209ce778da48555edeb7f531"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function prototype for allocating memory to be used for kv-store internal operations.  <a href="group__group__kvstore.html#gaf4640989209ce778da48555edeb7f531">More...</a><br /></td></tr>
+<tr class="separator:gaf4640989209ce778da48555edeb7f531"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacc6ed573c4d9f8c441bd4605d26ddd81"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#gacc6ed573c4d9f8c441bd4605d26ddd81">mtb_kvstore_free_memory_t</a>) (void *ptr)</td></tr>
+<tr class="memdesc:gacc6ed573c4d9f8c441bd4605d26ddd81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function prototype for freeing memory.  <a href="group__group__kvstore.html#gacc6ed573c4d9f8c441bd4605d26ddd81">More...</a><br /></td></tr>
+<tr class="separator:gacc6ed573c4d9f8c441bd4605d26ddd81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga51e164317709c8d0c02fc07d87e4e780"><td class="memItemLeft" align="right" valign="top">cy_rslt_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> (mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const <a class="el" href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a> *block_device)</td></tr>
-<tr class="memdesc:ga51e164317709c8d0c02fc07d87e4e780"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a instance kv-store library.  <a href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">More...</a><br /></td></tr>
-<tr class="separator:ga51e164317709c8d0c02fc07d87e4e780"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5fa9ddeac64024562e60999088f638b7"><td class="memItemLeft" align="right" valign="top">cy_rslt_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> (mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_block_storage_t *bsd, <a class="el" href="group__group__kvstore.html#gaf4640989209ce778da48555edeb7f531">mtb_kvstore_allocate_memory_t</a> alloc_memory, <a class="el" href="group__group__kvstore.html#gacc6ed573c4d9f8c441bd4605d26ddd81">mtb_kvstore_free_memory_t</a> free_memory)</td></tr>
+<tr class="memdesc:ga5fa9ddeac64024562e60999088f638b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an instance of the kv-store library.  <a href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">More...</a><br /></td></tr>
+<tr class="separator:ga5fa9ddeac64024562e60999088f638b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga209eef7f4603173449de48d3d4775835"><td class="memItemLeft" align="right" valign="top">cy_rslt_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a> (mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size)</td></tr>
 <tr class="memdesc:ga209eef7f4603173449de48d3d4775835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a key value pair.  <a href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">More...</a><br /></td></tr>
 <tr class="separator:ga209eef7f4603173449de48d3d4775835"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -433,66 +282,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga4388f0dd869ef9dbe2da0d2920cca290"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete kv-store instance.  <a href="group__group__kvstore.html#ga4388f0dd869ef9dbe2da0d2920cca290">More...</a><br /></td></tr>
 <tr class="separator:ga4388f0dd869ef9dbe2da0d2920cca290"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/><h2 class="groupheader">Data Structure Documentation</h2>
-<a name="structmtb__kvstore__bd__t" id="structmtb__kvstore__bd__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structmtb__kvstore__bd__t">&#9670;&nbsp;</a></span>mtb_kvstore_bd_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct mtb_kvstore_bd_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a405a94199e464120970faaaf987eb3af" name="a405a94199e464120970faaaf987eb3af"></a><a class="el" href="group__group__kvstore.html#gacccba62e614b1ebb309dc312b7b67e3a">mtb_kvstore_bd_read</a></td>
-<td class="fieldname">
-read</td>
-<td class="fielddoc">
-Function to read from device. </td></tr>
-<tr><td class="fieldtype">
-<a id="a20a7a7fa9739cec6774df53253f0aaa1" name="a20a7a7fa9739cec6774df53253f0aaa1"></a><a class="el" href="group__group__kvstore.html#gaa832bac0e2f7b15478abb73ae8631b8d">mtb_kvstore_bd_program</a></td>
-<td class="fieldname">
-program</td>
-<td class="fielddoc">
-Function to program to device. </td></tr>
-<tr><td class="fieldtype">
-<a id="a368ba3f8a7911728bcab952f02dc077b" name="a368ba3f8a7911728bcab952f02dc077b"></a><a class="el" href="group__group__kvstore.html#ga8eee071bb3809130b77fb7c8f69e7a67">mtb_kvstore_bd_erase</a></td>
-<td class="fieldname">
-erase</td>
-<td class="fielddoc">
-Function to erase device. </td></tr>
-<tr><td class="fieldtype">
-<a id="aa376bb68ef78eadbfdae534bb907d5cc" name="aa376bb68ef78eadbfdae534bb907d5cc"></a><a class="el" href="group__group__kvstore.html#ga4d03d5b99d6254298f9eaefb0978170f">mtb_kvstore_bd_read_size</a></td>
-<td class="fieldname">
-read_size</td>
-<td class="fielddoc">
-Function to get read size for an address. </td></tr>
-<tr><td class="fieldtype">
-<a id="a25c8c8c088ae475b1061e012e889d9b9" name="a25c8c8c088ae475b1061e012e889d9b9"></a><a class="el" href="group__group__kvstore.html#ga33782352587721d63e4ca26f35558d90">mtb_kvstore_bd_program_size</a></td>
-<td class="fieldname">
-program_size</td>
-<td class="fielddoc">
-Function to get program size for an address. </td></tr>
-<tr><td class="fieldtype">
-<a id="af2af1f47472f73b9c96068cd999a956b" name="af2af1f47472f73b9c96068cd999a956b"></a><a class="el" href="group__group__kvstore.html#ga9dcd451cefcdae7d7063aa2e173b948b">mtb_kvstore_bd_erase_size</a></td>
-<td class="fieldname">
-erase_size</td>
-<td class="fielddoc">
-Function to get erase size for an address. </td></tr>
-<tr><td class="fieldtype">
-<a id="a078caa17ea25e2109a6e25c92cb105cb" name="a078caa17ea25e2109a6e25c92cb105cb"></a>void *</td>
-<td class="fieldname">
-context</td>
-<td class="fielddoc">
-Context object that can be used in the block device implementation. </td></tr>
-</table>
-
-</div>
-</div>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ga4513227045ee358f8f2622c8cf0a3485" name="ga4513227045ee358f8f2622c8cf0a3485"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga4513227045ee358f8f2622c8cf0a3485">&#9670;&nbsp;</a></span>MTB_KVSTORE_ALIGNMENT_ERROR</h2>
@@ -507,7 +296,7 @@ Context object that can be used in the block device implementation. </td></tr>
 </div><div class="memdoc">
 
 <p>The storage area passed in is not aligned to erase sector boundary. </p>
-<p >See notes in <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> for more information on constraints. </p>
+<p >See notes in <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> for more information on constraints. </p>
 
 </div>
 </div>
@@ -578,7 +367,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype for reading data from the block device. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address to read the data from the block device. This address is passed in as start_addr + offset. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the data that needs to be read. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">buf</td><td>Buffer to read the data. </td></tr>
@@ -604,7 +393,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype for writing data to the block device. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address to program the data into the block device. This address is passed in as start_addr + offset. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the data that needs to be written </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">buf</td><td>Data that needs to be written </td></tr>
@@ -630,7 +419,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype for read from the block device. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address to read the data from the device. This address is passed in as start_addr + offset. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Length of the data that needs to be erased. </td></tr>
   </table>
@@ -655,7 +444,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype to get the read size of the block device for a specific address. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address for which the read size is queried. This address is passed in as start_addr + offset. </td></tr>
   </table>
   </dd>
@@ -679,7 +468,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype to get the program size of the block device for a specific address. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address for which the program size is queried. This address is passed in as start_addr + offset. </td></tr>
   </table>
   </dd>
@@ -703,7 +492,7 @@ Context object that can be used in the block device implementation. </td></tr>
 <p>Function prototype to get the erase size of the block device for a specific address. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga51e164317709c8d0c02fc07d87e4e780">mtb_kvstore_init</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">context</td><td>Context object that is passed into <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address for which the erase size is queried. This address is passed in a start_addr + offset. </td></tr>
   </table>
   </dd>
@@ -712,9 +501,55 @@ Context object that can be used in the block device implementation. </td></tr>
 
 </div>
 </div>
+<a id="gaf4640989209ce778da48555edeb7f531" name="gaf4640989209ce778da48555edeb7f531"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf4640989209ce778da48555edeb7f531">&#9670;&nbsp;</a></span>mtb_kvstore_allocate_memory_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void *(* mtb_kvstore_allocate_memory_t) (size_t size)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function prototype for allocating memory to be used for kv-store internal operations. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Size in bytes of the memory to be allocated </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the allocated memory in case the memory allocation is success or NULL in case of failure. </dd></dl>
+
+</div>
+</div>
+<a id="gacc6ed573c4d9f8c441bd4605d26ddd81" name="gacc6ed573c4d9f8c441bd4605d26ddd81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacc6ed573c4d9f8c441bd4605d26ddd81">&#9670;&nbsp;</a></span>mtb_kvstore_free_memory_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* mtb_kvstore_free_memory_t) (void *ptr)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function prototype for freeing memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>Pointer to the memory block to be freed </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>None. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga51e164317709c8d0c02fc07d87e4e780" name="ga51e164317709c8d0c02fc07d87e4e780"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga51e164317709c8d0c02fc07d87e4e780">&#9670;&nbsp;</a></span>mtb_kvstore_init()</h2>
+<a id="ga5fa9ddeac64024562e60999088f638b7" name="ga5fa9ddeac64024562e60999088f638b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5fa9ddeac64024562e60999088f638b7">&#9670;&nbsp;</a></span>mtb_kvstore_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -740,8 +575,20 @@ Context object that can be used in the block device implementation. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="group__group__kvstore.html#structmtb__kvstore__bd__t">mtb_kvstore_bd_t</a> *&#160;</td>
-          <td class="paramname"><em>block_device</em>&#160;</td>
+          <td class="paramtype">const mtb_block_storage_t *&#160;</td>
+          <td class="paramname"><em>bsd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__group__kvstore.html#gaf4640989209ce778da48555edeb7f531">mtb_kvstore_allocate_memory_t</a>&#160;</td>
+          <td class="paramname"><em>alloc_memory</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__group__kvstore.html#gacc6ed573c4d9f8c441bd4605d26ddd81">mtb_kvstore_free_memory_t</a>&#160;</td>
+          <td class="paramname"><em>free_memory</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -751,13 +598,15 @@ Context object that can be used in the block device implementation. </td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Initialize a instance kv-store library. </p>
+<p>Initialize an instance of the kv-store library. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">obj</td><td>Pointer to a kv-store object. The caller must allocate the memory for this object but the init function will initialize its contents. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">start_addr</td><td>Start address for the memory. All addresses when performing memory operations will be offset from this address. See notes for constraints. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>Total space available in bytes. See notes for constraints. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">block_device</td><td>Block device interface for the underlying memory to be used.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bsd</td><td>Block storage device interface for the underlying memory to be used. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alloc_memory</td><td>Optional parameter that could be used to allocate the requested memory size. Application could set up this function pointer if they desire to allocate the memory from specific memory region. If not null, KV Store uses the specified function for allocating the memory needed for internal operations. When specified as NULL, KV Store uses the malloc function to allocate the memory </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">free_memory</td><td>Optional parameter that could be used to free the memory block allocated using the 'alloc_memory' function.If not null, KV Store uses the specified function for freeing the memory. When specified as NULL, KV Store uses the free function to free the memory</td></tr>
   </table>
   </dd>
 </dl>
@@ -767,7 +616,9 @@ An even number of erase sectors must be provided as storage. (2 * N * erase sect
 <dd>
 The implementation assumes that the value of the storage in the erased state is either 0x00 or 0xFF. </dd>
 <dd>
-The space provided to the library provided must have the uniform characteristics (erase, program and read size). A space spanning regions with different characteristics in a hybrid sector device is not supported and if provided may lead to undefined behavior.</dd></dl>
+The space provided to the library provided must have the uniform characteristics (erase, program and read size). A space spanning regions with different characteristics in a hybrid sector device is not supported and if provided may lead to undefined behavior. </dd>
+<dd>
+If the application desires to use specific memory region for KV Store internal operation, it should set up both the alloc_memory and free_memory functions.</dd></dl>
 <p>RTOS considerations </p><dl class="section note"><dt>Note</dt><dd>In a RTOS environment the library must be initialized after the RTOS kernel has started.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Result of the initialization operation. </dd></dl>
 
@@ -1214,7 +1065,7 @@ The space provided to the library provided must have the uniform characteristics
 <div id="nav-path" class="navpath">
     <ul>
         <li class="footer">
-            Generated for <b>Key Value Storage (kv-store)</b> by <b>Cypress Semiconductor Corporation</b>.
+            Generated for <b>(kv-store)</b> by <b>Cypress Semiconductor Corporation</b>.
             All rights reserved.
         </li>
     </ul>

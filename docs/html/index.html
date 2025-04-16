@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Key Value Storage (kv-store)</title>
+<title>(kv-store)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,7 +27,7 @@
  <tr style="height: 56px;">
   <td id="projectlogo"><a href="http://www.cypress.com/"><img alt="Logo" src="logo.png"/></a></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Key Value Storage (kv-store)</div>
+   <div id="projectname">(kv-store)</div>
   </td>
  </tr>
  </tbody>
@@ -86,7 +86,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
   <div class="headertitle"><div class="title">Key Value Storage Library </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p ><a class="anchor" id="md_source_support_kv_store_README_doxygen"></a> </p>
+<div class="textblock"><p ><a class="anchor" id="md_output_README_doxygen"></a> </p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Overview</h1>
 <p >This library provides a convenient way to store information as key-value pairs in non-volatile storage.</p>
@@ -100,7 +100,7 @@ Features</h1>
 </ul>
 <h1><a class="anchor" id="autotoc_md3"></a>
 Storage</h1>
-<p >The utility operates on the assumption that the underlying storage is a block device which may not have the same program and erase sizes. The application is required to provide an implementation for a block device interface (<code><a class="el" href="group__group__kvstore.html#structmtb__kvstore__bd__t" title="Block device interface.">mtb_kvstore_bd_t</a></code>) that describes the characteristics of the underlying storage and defines basic operations (read, write, erase). See <code>mtb_kvstore_init</code> for a description of the constraints that the storage must satisfy. Code snippets using the serial-flash library (External Flash) and HAL flash driver (Internal Flash) are provided as example implementations of the storage interface in the Getting Started section in the API Reference Guide.</p>
+<p >The utility operates on the assumption that the underlying storage is a block device which may not have the same program and erase sizes. The application is required to initialize and create the block storage interface(<code>mtb_block_storage_t</code>).</p>
 <h1><a class="anchor" id="autotoc_md4"></a>
 Keys and Values</h1>
 <h2><a class="anchor" id="autotoc_md5"></a>
@@ -108,7 +108,7 @@ Keys</h2>
 <p >Keys are ASCII strings (Null terminated). The maximum key length is defined by <code>MTB_KVSTORE_MAX_KEY_SIZE</code>. This can be overridden by the application by adding <code>DEFINES+=MTB_KVSTORE_MAX_KEY_SIZE=&lt;value&gt;</code> with the desired value to application Makefile.</p>
 <h2><a class="anchor" id="autotoc_md6"></a>
 Values</h2>
-<p >Values are arbitrary length binary data. By default it is assumed that each value (plus the header info of ~20 bytes) is less than the <code><a class="el" href="group__group__kvstore.html#structmtb__kvstore__bd__t" title="Block device interface.">mtb_kvstore_bd_t</a></code> <code>erase_size</code>. If this is not true, a define <code>MTB_KVSTORE_MAX_VALUE_SIZE</code> must be defined with the actual max value size. NOTE: This define is not currently used, but will be in a future update. Setting it now will help ensure the application works properly with newer versions of the kv-store library.</p>
+<p >Values are arbitrary length binary data. By default it is assumed that each value (plus the header info of ~20 bytes) is less than the <code>mtb_block_storage_t</code> <code>erase_size</code>. If this is not true, a define <code>MTB_KVSTORE_MAX_VALUE_SIZE</code> must be defined with the actual max value size. NOTE: This define is not currently used, but will be in a future update. Setting it now will help ensure the application works properly with newer versions of the kv-store library.</p>
 <h1><a class="anchor" id="autotoc_md7"></a>
 RTOS Integration</h1>
 <p >In an RTOS environment, the library can be made thread safe by adding the <code>RTOS_AWARE</code> component (COMPONENTS+=RTOS_AWARE) or by defining the <code>CY_RTOS_AWARE</code> macro (DEFINES+=CY_RTOS_AWARE). This causes all API to be protected by a mutex to serialize access to underlying storage device. The kvstore library must be initialized after the RTOS kernel has started for the mutex to be initialized safely. The default timeout for the mutex is defined by <code>MTB_KVSTORE_MUTEX_TIMEOUT_MS</code> and can be overridden by specifying <code>DEFINES+=MTB_KVSTORE_MUTEX_TIMEOUT_MS=&lt;value&gt;</code> with the application Makefile.</p>
@@ -159,6 +159,7 @@ Garbage collection</h2>
 Dependencies</h1>
 <ul>
 <li><a href="https://github.com/infineon/abstraction-rtos">abstraction-rtos</a> library if the <code>CY_RTOS_AWARE</code> macro is defined in the Makefile</li>
+<li><a href="https://github.com/infineon/block-storage">block-storage</a> library</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md15"></a>
 More information</h1>
@@ -177,7 +178,7 @@ More information</h1>
 <div id="nav-path" class="navpath">
     <ul>
         <li class="footer">
-            Generated for <b>Key Value Storage (kv-store)</b> by <b>Cypress Semiconductor Corporation</b>.
+            Generated for <b>(kv-store)</b> by <b>Cypress Semiconductor Corporation</b>.
             All rights reserved.
         </li>
     </ul>
