@@ -153,7 +153,7 @@ Getting Started</h1>
 <li>Call <a class="el" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a> by passing the start address, length, block device and the optional memory allocate and free function pointers <div class="fragment"><div class="line">    mtb_kvstore_t      obj;</div>
 <div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a>(&amp;obj, start_addr, length, &amp;nvm_bsd, NULL, NULL);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_ga5fa9ddeac64024562e60999088f638b7"><div class="ttname"><a href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_block_storage_t *bsd, mtb_kvstore_allocate_memory_t alloc_memory, mtb_kvstore_free_memory_t free_memory)</div><div class="ttdoc">Initialize an instance of the kv-store library.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1568</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_ga5fa9ddeac64024562e60999088f638b7"><div class="ttname"><a href="group__group__kvstore.html#ga5fa9ddeac64024562e60999088f638b7">mtb_kvstore_init</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_init(mtb_kvstore_t *obj, uint32_t start_addr, uint32_t length, const mtb_block_storage_t *bsd, mtb_kvstore_allocate_memory_t alloc_memory, mtb_kvstore_free_memory_t free_memory)</div><div class="ttdoc">Initialize an instance of the kv-store library.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1572</div></div>
 </div><!-- fragment --></li>
 </ul>
 </li>
@@ -161,17 +161,17 @@ Getting Started</h1>
 <li>Write operation. <div class="fragment"><div class="line">    uint8_t data[10];</div>
 <div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>, data, <span class="keyword">sizeof</span>(data));</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_ga209eef7f4603173449de48d3d4775835"><div class="ttname"><a href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size)</div><div class="ttdoc">Store a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1659</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_ga209eef7f4603173449de48d3d4775835"><div class="ttname"><a href="group__group__kvstore.html#ga209eef7f4603173449de48d3d4775835">mtb_kvstore_write</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_write(mtb_kvstore_t *obj, const char *key, const uint8_t *data, uint32_t size)</div><div class="ttdoc">Store a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1663</div></div>
 </div><!-- fragment --></li>
 <li>Read operation. <div class="fragment"><div class="line">    uint8_t read_data[10];</div>
 <div class="line">    uint32_t data_size = <span class="keyword">sizeof</span>(read_data);</div>
 <div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>, read_data, &amp;data_size);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_gad2327026f8f741835d012aa0a1f60f14"><div class="ttname"><a href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size)</div><div class="ttdoc">Read data associated with a key.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1741</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_gad2327026f8f741835d012aa0a1f60f14"><div class="ttname"><a href="group__group__kvstore.html#gad2327026f8f741835d012aa0a1f60f14">mtb_kvstore_read</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_read(mtb_kvstore_t *obj, const char *key, uint8_t *data, uint32_t *size)</div><div class="ttdoc">Read data associated with a key.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1745</div></div>
 </div><!-- fragment --></li>
 <li>Delete operation. <div class="fragment"><div class="line">    result = <a class="code hl_function" href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a>(&amp;obj, <span class="stringliteral">&quot;hello&quot;</span>);</div>
 <div class="line">    CY_ASSERT(result == CY_RSLT_SUCCESS);</div>
-<div class="ttc" id="agroup__group__kvstore_html_gafb22467328e29fd0b881eae93679a0f9"><div class="ttname"><a href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key)</div><div class="ttdoc">Delete a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1866</div></div>
+<div class="ttc" id="agroup__group__kvstore_html_gafb22467328e29fd0b881eae93679a0f9"><div class="ttname"><a href="group__group__kvstore.html#gafb22467328e29fd0b881eae93679a0f9">mtb_kvstore_delete</a></div><div class="ttdeci">cy_rslt_t mtb_kvstore_delete(mtb_kvstore_t *obj, const char *key)</div><div class="ttdoc">Delete a key value pair.</div><div class="ttdef"><b>Definition:</b> mtb_kvstore.c:1870</div></div>
 </div><!-- fragment --> </li>
 </ul>
 </li>

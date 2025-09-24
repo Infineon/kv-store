@@ -2,6 +2,6 @@
     "core": {
         "id": "02fb0082-fc6b-5fc3-9907-1c6e5ce7af2c",
         "name": "kv-store",
-        "version": "2.0.0.342"
+        "version": "2.1.0.688"
     }
 }

@@ -276,6 +276,10 @@ static cy_rslt_t _mtb_kvstore_increment_max_keys(mtb_kvstore_t* obj)
         free(obj->ram_table);
         obj->ram_table = new_table;
         obj->max_entries = new_entry_count;
+        #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+        SCB_CleanDCache_by_Addr(obj->ram_table,
+                                obj->max_entries * sizeof(mtb_kvstore_ram_table_entry_t));
+        #endif
     }
     else
     {

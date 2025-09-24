@@ -5,6 +5,8 @@ The key value storage library provides an API enabling use of non-volatile stora
 APIs for storing key-value pairs of data in non-volatile storage.
 
 ### What Changed?
+#### v2.1.0
+* Fix minor issue in DCACHE handling
 #### v2.0.0
 * Replace the kv-store specific block device interface with the standard mtb-block-storage interface
 * Add ability to override the default `malloc` and `free` functions for custom dynamic memory allocation
