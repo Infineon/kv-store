@@ -5,6 +5,8 @@ The key value storage library provides an API enabling use of non-volatile stora
 APIs for storing key-value pairs of data in non-volatile storage.
 
 ### What Changed?
+#### v2.2.0
+* Documentation update
 #### v2.1.0
 * Fix minor issue in DCACHE handling
 #### v2.0.0
