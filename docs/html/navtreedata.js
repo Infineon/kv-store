@@ -25,26 +25,8 @@
 var NAVTREE =
 [
   [ "Key Value Storage", "index.html", [
-    [ "Key Value Storage Library", "index.html", [
-      [ "Overview", "index.html#autotoc_md1", null ],
-      [ "Features", "index.html#autotoc_md2", null ],
-      [ "Storage", "index.html#autotoc_md3", null ],
-      [ "Keys and Values", "index.html#autotoc_md4", [
-        [ "Keys", "index.html#autotoc_md5", null ],
-        [ "Values", "index.html#autotoc_md6", null ]
-      ] ],
-      [ "RTOS Integration", "index.html#autotoc_md7", null ],
-      [ "Design details", "index.html#autotoc_md8", [
-        [ "Sequential log of records", "index.html#autotoc_md9", null ],
-        [ "Memory Layout", "index.html#autotoc_md10", null ],
-        [ "Record", "index.html#autotoc_md11", null ],
-        [ "RAM table", "index.html#autotoc_md12", null ],
-        [ "Garbage collection", "index.html#autotoc_md13", null ]
-      ] ],
-      [ "Dependencies", "index.html#autotoc_md14", null ],
-      [ "More information", "index.html#autotoc_md15", null ]
-    ] ],
-    [ "API Reference", "modules.html", "modules" ]
+    [ "Key Value Storage Library - Persistent Key-Value Storage for Non-Volatile Memory", "index.html", "index" ],
+    [ "API Reference", "topics.html", "topics" ]
   ] ]
 ];
 
@@ -53,5 +35,6 @@ var NAVTREEINDEX =
 "group__group__kvstore.html"
 ];
 
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
+var SYNCONMSG = 'click to disable panel synchronization';
+var SYNCOFFMSG = 'click to enable panel synchronization';
+var LISTOFALLMEMBERS = 'List of all members';

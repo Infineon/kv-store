@@ -6,10 +6,8 @@
  *
  ***************************************************************************************************
  * \copyright
- * Copyright 2018-2022 Cypress Semiconductor Corporation (an Infineon company) or
- * an affiliate of Cypress Semiconductor Corporation
- *
- * SPDX-License-Identifier: Apache-2.0
+ * (c) 2021-2025, Infineon Technologies AG, or an affiliate of Infineon
+ * Technologies AG.  SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,56 +41,6 @@ extern "C" {
  * \{
  * This library provides a convenient way to store information as key-value pairs in non-volatile
  * storage.
- *
- * \section section_kvstore_getting_started Getting Started
- * This section provides steps for getting started with this library by using the block
- * storage interface.[block-storage] (https://github.com/infineon/block-storage)
- *
- * -# Include the kv-store library header in the application.
- *    \snippet kvstore_snip.c snippet_mtb_kvstore_include
- *
- * -# Initialize the underlying storage. This could be done using either the HAL NVM
- * or Serial Memory depending on the storage
- *      - Example initialization for hal API 3.0 nvm driver
- *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_hal_nvm
- *      - Example initialization for serial memory driver
- *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_ser_mem
- *      - Example initialization for hal API 2.0 nvm driver
- *       \snippet kvstore_snip.c snippet_mtb_kvstore_init_classic_hal_nvm
- *
- * -# Create the block storage interface using the HAL NVM or the serial memory.If neither the
- * HAL NVM nor serial memory driver is being used to communicate  with the
- * storage device, the application must provide a custom implementation of the block device
- * interface.
- *      - Example implementation using block storage HAL 3.0 NVM interface
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_hal_nvm
- *      - Example implementation using block storage serial-memory interface
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_ser_mem
- *      - Example implementation using block storage HAL Classic NVM interface
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_bsd_create_classic_hal_nvm
- *
- * -# Initialize the kv-store library.
- *      - Set the start address and length.
- *          - If using the hal-nvm driver, for this example the address space
- *            provided starts 16 pages from the end of the nvm. Note that if
- *            the device does not have a working flash (i.e. using main
- *            flash) care must be taken to ensure that the space allocated below is
- *            not used by anything else (for eg. Application image).
- *            \snippet kvstore_snip.c snippet_mtb_kvstore_addr_len_hal_nvm
- *          - If using the serial-memory library, for this example we define the space
- *            provided to the kv-store library to be the size of 2 sectors.
- *            \snippet kvstore_snip.c snippet_mtb_kvstore_addr_len_ser_mem
- *      - Call \ref mtb_kvstore_init by passing the start address, length, block device
- *         and the optional memory allocate and free function pointers
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_init
- *
- * -# The library should now be ready to perform operations.
- *      - Write operation.
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_write
- *      - Read operation.
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_read
- *      - Delete operation.
- *        \snippet kvstore_snip.c snippet_mtb_kvstore_delete
  */
 
 #if !defined(MTB_KVSTORE_MAX_KEY_SIZE)
@@ -286,6 +234,12 @@ typedef struct
  *       hybrid sector device is not supported and if provided may lead to undefined behavior.
  * \note If the application desires to use specific memory region for KV Store internal operation,
  *       it should set up both the alloc_memory and free_memory functions.
+ * \note Verify that start_addr is a valid, mapped address before calling this function. When
+ *       deriving start_addr from a HAL NVM region info structure, do not blindly use the last
+ *       region (regions[region_count - 1]). On some devices the HAL unconditionally appends
+ *       extra regions (e.g. a dual-bank region on a single-bank device) whose start_address
+ *       may resolve to 0. Passing address 0 (or any unmapped address) will cause a HardFault
+ *       when the library attempts to read the storage during initialization.
  *
  * RTOS considerations
  * \note In a RTOS environment the library must be initialized after the RTOS kernel has started.

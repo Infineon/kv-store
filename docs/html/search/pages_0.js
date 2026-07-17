@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['key_20value_20storage_20library_0',['Key Value Storage Library',['../index.html',1,'']]]
+  ['and_20changelog_0',['Release Notes and Changelog',['../index.html#autotoc_md18',1,'']]]
 ];
